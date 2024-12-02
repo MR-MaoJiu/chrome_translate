@@ -18,67 +18,58 @@
   gap: 12px;
 }
 
-.translation-content .word {
+.word-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-right: 32px;
+}
+
+.word {
   font-size: 18px;
   font-weight: 600;
   color: #2c3e50;
-  padding-right: 24px;
 }
 
-.translation-content .meaning {
+.phonetic {
+  color: #666;
+  font-size: 14px;
+  font-family: monospace;
+}
+
+.speak-btn {
+  width: 28px;
+  height: 28px;
+  border: none;
+  background: #f5f7fa;
+  color: #666;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  padding: 0;
+  font-size: 16px;
+}
+
+.speak-btn:hover {
+  background: #e8eaed;
+  color: #4CAF50;
+  transform: scale(1.1);
+}
+
+.meaning {
   font-size: 15px;
   color: #666;
   line-height: 1.5;
-  transition: all 0.3s ease;
 }
 
-.translation-content .meaning.loading {
-  color: #4CAF50;
-  position: relative;
-  padding-left: 20px;
-}
-
-.translation-content .meaning.loading::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 50%;
-  width: 12px;
-  height: 12px;
-  border: 2px solid #4CAF50;
-  border-right-color: transparent;
-  border-radius: 50%;
-  animation: rotate 0.8s linear infinite;
-}
-
-.translation-content .meaning.error {
-  color: #ff6b6b;
-  padding-left: 20px;
-  position: relative;
-}
-
-.translation-content .meaning.error::before {
-  content: '!';
-  position: absolute;
-  left: 0;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 16px;
-  height: 16px;
-  background: #ff6b6b;
-  color: white;
-  border-radius: 50%;
-  text-align: center;
-  line-height: 16px;
-  font-size: 12px;
-  font-weight: bold;
-}
-
-.hover-popup .translation-content .meaning {
+.hover-popup .meaning {
   filter: blur(3px);
 }
 
-.hover-popup .translation-content:hover .meaning {
+.hover-popup:hover .meaning {
   filter: none;
 }
 

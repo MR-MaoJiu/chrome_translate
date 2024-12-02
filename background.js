@@ -47,22 +47,28 @@ async function translateWithYoudao(word) {
     }
     
     const data = await response.json();
+    let translation = '';
+    let phonetic = '';
 
-    // 解析翻译结果
+    // 获取翻译
     if (data.ec?.word?.[0]?.trs) {
       const translations = data.ec.word[0].trs.map(tr => 
         tr.tr[0].l.i[0].replace(/\s*\([^)]*\)/g, '')
       );
-      return translations.join('；');
-    }
-
-    // 尝试使用网络释义
-    if (data.web_trans?.['web-translation']?.[0]?.trans) {
+      translation = translations.join('；');
+    } else if (data.web_trans?.['web-translation']?.[0]?.trans) {
       const webTrans = data.web_trans['web-translation'][0].trans;
-      return webTrans.map(t => t.value).join('；');
+      translation = webTrans.map(t => t.value).join('；');
+    } else {
+      translation = '未找到翻译';
     }
 
-    return '未找到翻译';
+    // 获取音标
+    if (data.ec?.word?.[0]?.ukphone) {
+      phonetic = data.ec.word[0].ukphone;
+    }
+
+    return { translation, phonetic };
   } catch (error) {
     console.error('翻译请求失败：', error);
     throw error;

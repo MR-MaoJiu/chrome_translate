@@ -67,37 +67,61 @@ const showTranslation = async (selectedText, popup, isHover = false) => {
       </div>
     `;
     
-    const translation = await translateWord(selectedText);
+    const response = await translateWord(selectedText);
     
     // 检查popup是否仍然存在（用户可能已关闭）
     if (!document.contains(popup)) {
       return;
     }
+
+    // 获取设置
+    const settings = await chrome.storage.sync.get('settings');
+    const { showPhonetic = true, autoSpeak = true } = settings.settings || {};
     
-    // 如果不是悬浮显示，则保存到生词本
-    if (!isHover && translation !== '翻译失败') {
-      await saveToVocabulary(selectedText, translation);
-      await recordTodayWord(selectedText); // 记录今日新学单词
-      await updateLearningStreak(); // 更新连续学习天数
-      await highlightKnownWords();
-    }
-    
-    // 检查单词是否已在生词本中
-    const isInVocabulary = await isWordKnown(selectedText);
-    const blurClass = isInVocabulary ? 'blur-translation' : '';
-    
-    popup.innerHTML = `
+    // 构建翻译内容
+    let translationHtml = `
       <div class="translation-content">
-        <div class="word">${selectedText}</div>
-        <div class="meaning ${blurClass}">${translation}</div>
+        <div class="word-header">
+          <div class="word">${selectedText}</div>
+          ${showPhonetic && response.phonetic ? 
+            `<div class="phonetic">/${response.phonetic}/</div>` : 
+            ''}
+          <button class="speak-btn" title="朗读单词">🔊</button>
+        </div>
+        <div class="meaning">${response.translation}</div>
       </div>
       <div class="close-btn">×</div>
     `;
+    
+    popup.innerHTML = translationHtml;
+
+    // 绑定朗读按钮事件
+    const speakBtn = popup.querySelector('.speak-btn');
+    if (speakBtn) {
+      speakBtn.onclick = () => {
+        const utterance = new SpeechSynthesisUtterance(selectedText);
+        utterance.lang = 'en-US';
+        speechSynthesis.speak(utterance);
+      };
+    }
+
+    // 如果设置了自动朗读且不是悬停显示
+    if (autoSpeak && !isHover) {
+      speakBtn?.click();
+    }
 
     // 重新绑定关闭按钮事件
     const closeBtn = popup.querySelector('.close-btn');
     if (closeBtn) {
       closeBtn.onclick = removeExistingPopup;
+    }
+
+    // 如果不是悬停显示，则保存到生词本
+    if (!isHover && response.translation !== '翻译失败') {
+      await saveToVocabulary(selectedText, response.translation);
+      await recordTodayWord(selectedText);
+      await updateLearningStreak();
+      await highlightKnownWords();
     }
   } catch (error) {
     console.error('翻译失败:', error);
