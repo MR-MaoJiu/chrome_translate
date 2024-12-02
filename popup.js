@@ -1,4 +1,6 @@
 let currentTab = 'unknown';
+let dailyGoal = 20; // 每日目标单词数
+let learningStreak = 0; // 连续学习天数
 
 // 获取生词本数据并显示
 async function displayVocabulary() {
@@ -20,7 +22,14 @@ async function displayVocabulary() {
   if (Object.keys(currentWords).length === 0) {
     vocabularyList.innerHTML = `
       <div class="empty-state">
-        ${currentTab === 'known' ? '还没有已掌握的单词' : '还没有收录新的单词'}
+        <div class="empty-state-icon">
+          ${currentTab === 'known' ? '🎯' : '📚'}
+        </div>
+        <div class="empty-state-text">
+          ${currentTab === 'known' ? 
+            '还没有已掌握的单词<br>继续加油学习吧！' : 
+            '还没有收录新的单词<br>遇到不认识的单词就选中它'}
+        </div>
       </div>
     `;
     return;
@@ -56,11 +65,20 @@ async function displayVocabulary() {
       }, 300);
     });
   });
+
+  // 添加每日目标标记
+  if (currentTab === 'unknown' && todayCount >= dailyGoal) {
+    const dailyGoalBadge = document.createElement('div');
+    dailyGoalBadge.className = 'daily-goal';
+    dailyGoalBadge.textContent = '今日目标已达成 🎉';
+    vocabularyList.appendChild(dailyGoalBadge);
+  }
 }
 
 // 初始化显示和事件监听
 document.addEventListener('DOMContentLoaded', () => {
   displayVocabulary();
+  updateProgress();
   
   // Tab切换事件
   document.querySelectorAll('.tab').forEach(tab => {
@@ -87,5 +105,37 @@ document.addEventListener('DOMContentLoaded', () => {
 chrome.storage.onChanged.addListener((changes) => {
   if (changes.vocabulary) {
     displayVocabulary();
+    updateProgress();
   }
-}); 
+});
+
+// 更新进度条和成就
+async function updateProgress() {
+  const vocabulary = await getVocabulary();
+  const knownCount = Object.keys(vocabulary.known).length;
+  const unknownCount = Object.keys(vocabulary.unknown).length;
+  const totalCount = knownCount + unknownCount;
+  
+  // 获取今日新学单词数
+  const today = new Date().toDateString();
+  const todayWords = await getTodayWords();
+  const todayCount = todayWords.length;
+  
+  // 更新进度条
+  const progress = Math.min((todayCount / dailyGoal) * 100, 100);
+  document.getElementById('progressFill').style.width = `${progress}%`;
+  document.getElementById('todayCount').textContent = todayCount;
+  document.getElementById('dailyGoal').textContent = dailyGoal;
+  
+  // 更新成就
+  document.getElementById('streak').querySelector('.achievement-value').textContent = `${learningStreak}天`;
+  document.getElementById('total').querySelector('.achievement-value').textContent = totalCount;
+  
+  const masteryRate = totalCount > 0 ? Math.round((knownCount / totalCount) * 100) : 0;
+  document.getElementById('mastery').querySelector('.achievement-value').textContent = `${masteryRate}%`;
+  
+  // 根据达成情况添加高亮
+  if (learningStreak >= 7) document.getElementById('streak').classList.add('active');
+  if (totalCount >= 100) document.getElementById('total').classList.add('active');
+  if (masteryRate >= 80) document.getElementById('mastery').classList.add('active');
+} 

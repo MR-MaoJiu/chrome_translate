@@ -63,7 +63,7 @@ const showTranslation = async (selectedText, popup, isHover = false) => {
     popup.innerHTML = `
       <div class="translation-content">
         <div class="word">${selectedText}</div>
-        <div class="meaning">正在翻译...</div>
+        <div class="meaning loading">正在翻译...</div>
       </div>
     `;
     
@@ -77,6 +77,8 @@ const showTranslation = async (selectedText, popup, isHover = false) => {
     // 如果不是悬浮显示，则保存到生词本
     if (!isHover && translation !== '翻译失败') {
       await saveToVocabulary(selectedText, translation);
+      await recordTodayWord(selectedText); // 记录今日新学单词
+      await updateLearningStreak(); // 更新连续学习天数
       await highlightKnownWords();
     }
     
@@ -85,15 +87,23 @@ const showTranslation = async (selectedText, popup, isHover = false) => {
         <div class="word">${selectedText}</div>
         <div class="meaning">${translation}</div>
       </div>
+      <div class="close-btn">×</div>
     `;
+
+    // 重新绑定关闭按钮事件
+    const closeBtn = popup.querySelector('.close-btn');
+    if (closeBtn) {
+      closeBtn.onclick = removeExistingPopup;
+    }
   } catch (error) {
     console.error('翻译失败:', error);
     if (document.contains(popup)) {
       popup.innerHTML = `
         <div class="translation-content">
           <div class="word">${selectedText}</div>
-          <div class="meaning">翻译失败，请重试</div>
+          <div class="meaning error">翻译失败，请重试</div>
         </div>
+        <div class="close-btn">×</div>
       `;
     }
   }

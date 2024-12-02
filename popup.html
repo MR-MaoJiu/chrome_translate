@@ -133,9 +133,164 @@
       color: #666;
       font-size: 14px;
     }
+    .header {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+    .progress-container {
+      background: #fff;
+      padding: 16px;
+      border-radius: 12px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+    .progress-title {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    .progress-label {
+      font-size: 14px;
+      color: #666;
+      font-weight: 500;
+    }
+    .progress-stats {
+      font-size: 13px;
+      color: #4CAF50;
+    }
+    .progress-bar {
+      height: 8px;
+      background: #f1f3f4;
+      border-radius: 4px;
+      overflow: hidden;
+      position: relative;
+    }
+    .progress-fill {
+      position: absolute;
+      left: 0;
+      top: 0;
+      height: 100%;
+      background: linear-gradient(90deg, #4CAF50, #81C784);
+      border-radius: 4px;
+      transition: width 0.5s ease;
+    }
+    .achievements {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 20px;
+    }
+    .achievement {
+      flex: 1;
+      background: #fff;
+      padding: 12px;
+      border-radius: 12px;
+      text-align: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+      position: relative;
+      overflow: hidden;
+    }
+    .achievement-icon {
+      font-size: 24px;
+      margin-bottom: 8px;
+      position: relative;
+      z-index: 1;
+    }
+    .achievement-label {
+      font-size: 12px;
+      color: #666;
+      position: relative;
+      z-index: 1;
+    }
+    .achievement.active {
+      background: linear-gradient(135deg, #4CAF50, #81C784);
+      color: white;
+    }
+    .achievement.active .achievement-label {
+      color: rgba(255,255,255,0.9);
+    }
+    .word-item {
+      position: relative;
+      overflow: hidden;
+    }
+    .word-item::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 4px;
+      height: 100%;
+      background: #4CAF50;
+      border-radius: 2px;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+    .word-item:hover::before {
+      opacity: 1;
+    }
+    .word-item.known::before {
+      background: #ff6b6b;
+    }
+    .empty-state {
+      text-align: center;
+      padding: 40px 20px;
+    }
+    .empty-state-icon {
+      font-size: 48px;
+      color: #ccc;
+      margin-bottom: 16px;
+    }
+    .empty-state-text {
+      color: #666;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+    .daily-goal {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      background: #FFC107;
+      color: white;
+      padding: 4px 8px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 500;
+      box-shadow: 0 2px 4px rgba(255,193,7,0.3);
+    }
   </style>
 </head>
 <body>
+  <div class="header">
+    <div class="progress-container">
+      <div class="progress-title">
+        <span class="progress-label">今日学习进度</span>
+        <span class="progress-stats">
+          <span id="todayCount">0</span> / <span id="dailyGoal">20</span>
+        </span>
+      </div>
+      <div class="progress-bar">
+        <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+      </div>
+    </div>
+    <div class="achievements">
+      <div class="achievement" id="streak">
+        <div class="achievement-icon">🔥</div>
+        <div class="achievement-label">连续学习</div>
+        <div class="achievement-value">0天</div>
+      </div>
+      <div class="achievement" id="total">
+        <div class="achievement-icon">📚</div>
+        <div class="achievement-label">总计单词</div>
+        <div class="achievement-value">0</div>
+      </div>
+      <div class="achievement" id="mastery">
+        <div class="achievement-icon">🎯</div>
+        <div class="achievement-label">掌握率</div>
+        <div class="achievement-value">0%</div>
+      </div>
+    </div>
+  </div>
+
   <div class="tab-container">
     <div class="tab active" data-tab="unknown">
       不认识的单词
@@ -146,6 +301,7 @@
       <span class="tab-badge" id="knownCount">0</span>
     </div>
   </div>
+
   <div id="vocabularyList" class="vocabulary-list"></div>
   <script src="storage.js"></script>
   <script src="popup.js"></script>

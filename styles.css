@@ -1,31 +1,77 @@
 .translate-popup {
   position: absolute;
   background: white;
-  border-radius: 8px;
-  padding: 12px 16px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  border-radius: 12px;
+  padding: 16px 20px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.15);
   z-index: 10000;
-  max-width: 300px;
-  animation: fadeIn 0.2s ease-in-out;
-  border: 1px solid #e8e8e8;
+  max-width: 320px;
+  animation: fadeIn 0.3s ease-in-out;
+  border: none;
+  backdrop-filter: blur(10px);
+  background: rgba(255, 255, 255, 0.98);
 }
 
 .translation-content {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 12px;
 }
 
 .translation-content .word {
-  font-size: 16px;
+  font-size: 18px;
   font-weight: 600;
-  color: #333;
+  color: #2c3e50;
+  padding-right: 24px;
 }
 
 .translation-content .meaning {
-  font-size: 14px;
+  font-size: 15px;
   color: #666;
-  transition: filter 0.3s ease;
+  line-height: 1.5;
+  transition: all 0.3s ease;
+}
+
+.translation-content .meaning.loading {
+  color: #4CAF50;
+  position: relative;
+  padding-left: 20px;
+}
+
+.translation-content .meaning.loading::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: 12px;
+  height: 12px;
+  border: 2px solid #4CAF50;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: rotate 0.8s linear infinite;
+}
+
+.translation-content .meaning.error {
+  color: #ff6b6b;
+  padding-left: 20px;
+  position: relative;
+}
+
+.translation-content .meaning.error::before {
+  content: '!';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 16px;
+  height: 16px;
+  background: #ff6b6b;
+  color: white;
+  border-radius: 50%;
+  text-align: center;
+  line-height: 16px;
+  font-size: 12px;
+  font-weight: bold;
 }
 
 .hover-popup .translation-content .meaning {
@@ -36,28 +82,62 @@
   filter: none;
 }
 
-.translate-popup:not(.hover-popup) .translation-content .meaning {
-  filter: none;
-}
-
 .translate-popup .close-btn {
   position: absolute;
-  top: 8px;
-  right: 8px;
+  top: 12px;
+  right: 12px;
   cursor: pointer;
   color: #999;
-  font-size: 14px;
-  width: 20px;
-  height: 20px;
+  font-size: 18px;
+  width: 24px;
+  height: 24px;
   display: flex;
   align-items: center;
   justify-content: center;
   border-radius: 50%;
+  transition: all 0.3s ease;
+  background: transparent;
 }
 
 .translate-popup .close-btn:hover {
   background: #f5f5f5;
   color: #666;
+  transform: rotate(90deg);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes rotate {
+  from {
+    transform: translate(0, -50%) rotate(0deg);
+  }
+  to {
+    transform: translate(0, -50%) rotate(360deg);
+  }
+}
+
+/* 弹窗出现时的背景模糊效果 */
+.translate-popup::before {
+  content: '';
+  position: absolute;
+  top: -10px;
+  left: -10px;
+  right: -10px;
+  bottom: -10px;
+  background: inherit;
+  filter: blur(10px);
+  z-index: -1;
+  opacity: 0.8;
+  border-radius: inherit;
 }
 
 .known-word {
@@ -85,14 +165,4 @@
 .hover-popup {
   pointer-events: auto;
 }
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(5px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-} 
+ 

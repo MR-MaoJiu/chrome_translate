@@ -28,4 +28,55 @@ const moveWord = async (word, fromType, toType) => {
   vocabulary[toType][word] = translation;
   
   await chrome.storage.sync.set({ vocabulary });
-}; 
+};
+
+// 获取今日学习的单词
+async function getTodayWords() {
+  const today = new Date().toDateString();
+  const result = await chrome.storage.sync.get(['dailyProgress', 'lastActiveDate']);
+  
+  // 检查是否需要重置每日进度
+  if (result.lastActiveDate !== today) {
+    await chrome.storage.sync.set({
+      lastActiveDate: today,
+      dailyProgress: []
+    });
+    return [];
+  }
+  
+  return result.dailyProgress || [];
+}
+
+// 记录今日新学单词
+async function recordTodayWord(word) {
+  const todayWords = await getTodayWords();
+  if (!todayWords.includes(word)) {
+    todayWords.push(word);
+    await chrome.storage.sync.set({ dailyProgress: todayWords });
+  }
+}
+
+// 更新连续学习天数
+async function updateLearningStreak() {
+  const today = new Date().toDateString();
+  const result = await chrome.storage.sync.get(['lastActiveDate', 'learningStreak']);
+  
+  const lastDate = new Date(result.lastActiveDate);
+  const currentDate = new Date(today);
+  const dayDiff = Math.floor((currentDate - lastDate) / (1000 * 60 * 60 * 24));
+  
+  let streak = result.learningStreak || 0;
+  
+  if (dayDiff === 1) {
+    streak++;
+  } else if (dayDiff > 1) {
+    streak = 1;
+  }
+  
+  await chrome.storage.sync.set({
+    lastActiveDate: today,
+    learningStreak: streak
+  });
+  
+  return streak;
+} 
