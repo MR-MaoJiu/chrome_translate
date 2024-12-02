@@ -1,8 +1,37 @@
 // 有道词典API配置
 const YOUDAO_API_URL = 'https://dict.youdao.com/jsonapi';
 
+// 获取当前设置
+async function getSettings() {
+  const result = await chrome.storage.sync.get('settings');
+  return result.settings || {
+    apiType: 'youdao',
+    customApiUrl: '',
+    apiKey: '',
+    autoSpeak: true,
+    showPhonetic: true,
+    showExample: true
+  };
+}
+
 // 翻译功能
 async function translateWord(word) {
+  const settings = await getSettings();
+  
+  switch (settings.apiType) {
+    case 'youdao':
+      return translateWithYoudao(word);
+    case 'google':
+      return translateWithGoogle(word);
+    case 'custom':
+      return translateWithCustomApi(word, settings);
+    default:
+      return translateWithYoudao(word);
+  }
+}
+
+// 有道词典API
+async function translateWithYoudao(word) {
   try {
     const params = new URLSearchParams({
       q: word,
@@ -36,6 +65,35 @@ async function translateWord(word) {
     return '未找到翻译';
   } catch (error) {
     console.error('翻译请求失败：', error);
+    throw error;
+  }
+}
+
+// Google翻译API
+async function translateWithGoogle(word) {
+  // 实现Google翻译API
+}
+
+// 自定义API
+async function translateWithCustomApi(word, settings) {
+  try {
+    const response = await fetch(settings.customApiUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${settings.apiKey}`
+      },
+      body: JSON.stringify({ word })
+    });
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    return data.translation;
+  } catch (error) {
+    console.error('自定义API请求失败：', error);
     throw error;
   }
 }

@@ -5,6 +5,7 @@
   "description": "划词翻译并自动保存生词本的Chrome插件",
   "permissions": [
     "storage",
+    "tabs",
     "activeTab"
   ],
   "host_permissions": [
@@ -30,5 +31,6 @@
   ],
   "background": {
     "service_worker": "background.js"
-  }
+  },
+  "options_page": "options.html"
 } 

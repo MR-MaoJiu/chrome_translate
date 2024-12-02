@@ -82,10 +82,14 @@ const showTranslation = async (selectedText, popup, isHover = false) => {
       await highlightKnownWords();
     }
     
+    // 检查单词是否已在生词本中
+    const isInVocabulary = await isWordKnown(selectedText);
+    const blurClass = isInVocabulary ? 'blur-translation' : '';
+    
     popup.innerHTML = `
       <div class="translation-content">
         <div class="word">${selectedText}</div>
-        <div class="meaning">${translation}</div>
+        <div class="meaning ${blurClass}">${translation}</div>
       </div>
       <div class="close-btn">×</div>
     `;

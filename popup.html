@@ -257,37 +257,107 @@
       font-weight: 500;
       box-shadow: 0 2px 4px rgba(255,193,7,0.3);
     }
+    .header {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+    .stats-container {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    .stats-item {
+      flex: 1;
+      background: #fff;
+      padding: 12px;
+      border-radius: 12px;
+      text-align: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+      position: relative;
+      overflow: hidden;
+    }
+    .stats-icon {
+      font-size: 24px;
+      margin-bottom: 8px;
+      position: relative;
+      z-index: 1;
+    }
+    .stats-value {
+      font-size: 18px;
+      font-weight: 600;
+      color: #2c3e50;
+      margin-bottom: 4px;
+      position: relative;
+      z-index: 1;
+    }
+    .stats-label {
+      font-size: 12px;
+      color: #666;
+      position: relative;
+      z-index: 1;
+    }
+    .quick-actions {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .action-btn {
+      flex: 1;
+      padding: 12px;
+      background: #fff;
+      border: none;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+    .action-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    .action-icon {
+      font-size: 20px;
+    }
+    .action-text {
+      white-space: nowrap;
+    }
   </style>
 </head>
 <body>
   <div class="header">
-    <div class="progress-container">
-      <div class="progress-title">
-        <span class="progress-label">今日学习进度</span>
-        <span class="progress-stats">
-          <span id="todayCount">0</span> / <span id="dailyGoal">20</span>
-        </span>
+    <div class="stats-container">
+      <div class="stats-item">
+        <div class="stats-icon">📚</div>
+        <div class="stats-value" id="totalCount">0</div>
+        <div class="stats-label">收录单词</div>
       </div>
-      <div class="progress-bar">
-        <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+      <div class="stats-item">
+        <div class="stats-icon">✨</div>
+        <div class="stats-value" id="masteryCount">0</div>
+        <div class="stats-label">已掌握</div>
+      </div>
+      <div class="stats-item">
+        <div class="stats-icon">🎯</div>
+        <div class="stats-value" id="accuracyRate">0%</div>
+        <div class="stats-label">掌握率</div>
       </div>
     </div>
-    <div class="achievements">
-      <div class="achievement" id="streak">
-        <div class="achievement-icon">🔥</div>
-        <div class="achievement-label">连续学习</div>
-        <div class="achievement-value">0天</div>
-      </div>
-      <div class="achievement" id="total">
-        <div class="achievement-icon">📚</div>
-        <div class="achievement-label">总计单词</div>
-        <div class="achievement-value">0</div>
-      </div>
-      <div class="achievement" id="mastery">
-        <div class="achievement-icon">🎯</div>
-        <div class="achievement-label">掌握率</div>
-        <div class="achievement-value">0%</div>
-      </div>
+    <div class="quick-actions">
+      <button class="action-btn" id="reviewBtn">
+        <span class="action-icon">🔄</span>
+        <span class="action-text">开始复习</span>
+      </button>
+      <button class="action-btn" id="settingsBtn">
+        <span class="action-icon">⚙️</span>
+        <span class="action-text">设置</span>
+      </button>
     </div>
   </div>
 

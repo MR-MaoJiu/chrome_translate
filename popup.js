@@ -2,6 +2,36 @@ let currentTab = 'unknown';
 let dailyGoal = 20; // 每日目标单词数
 let learningStreak = 0; // 连续学习天数
 
+// 更新统计数据
+async function updateStats() {
+  const vocabulary = await getVocabulary();
+  const knownCount = Object.keys(vocabulary.known).length;
+  const unknownCount = Object.keys(vocabulary.unknown).length;
+  const totalCount = knownCount + unknownCount;
+  
+  // 更新统计数字
+  document.getElementById('totalCount').textContent = totalCount;
+  document.getElementById('masteryCount').textContent = knownCount;
+  document.getElementById('accuracyRate').textContent = 
+    totalCount > 0 ? Math.round((knownCount / totalCount) * 100) + '%' : '0%';
+  
+  // 更新标签数量
+  document.getElementById('knownCount').textContent = knownCount;
+  document.getElementById('unknownCount').textContent = unknownCount;
+}
+
+// 打开复习模式
+function startReview() {
+  chrome.tabs.create({
+    url: chrome.runtime.getURL('review.html')
+  });
+}
+
+// 打开设置页面
+function openSettings() {
+  chrome.runtime.openOptionsPage();
+}
+
 // 获取生词本数据并显示
 async function displayVocabulary() {
   const vocabularyList = document.getElementById('vocabularyList');
@@ -73,12 +103,18 @@ async function displayVocabulary() {
     dailyGoalBadge.textContent = '今日目标已达成 🎉';
     vocabularyList.appendChild(dailyGoalBadge);
   }
+
+  // 更新统计
+  await updateStats();
 }
 
 // 初始化显示和事件监听
 document.addEventListener('DOMContentLoaded', () => {
   displayVocabulary();
-  updateProgress();
+  
+  // 绑定按钮事件
+  document.getElementById('reviewBtn').addEventListener('click', startReview);
+  document.getElementById('settingsBtn').addEventListener('click', openSettings);
   
   // Tab切换事件
   document.querySelectorAll('.tab').forEach(tab => {
