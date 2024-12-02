@@ -1,0 +1,11 @@
+{
+  "name": "chrome-translate-extension",
+  "version": "1.0.0",
+  "description": "Chrome translation extension",
+  "scripts": {
+    "generate-icons": "node generate_icons.js"
+  },
+  "dependencies": {
+    "sharp": "^0.32.1"
+  }
+} 

@@ -1,0 +1,34 @@
+{
+  "manifest_version": 3,
+  "name": "智能单词翻译助手",
+  "version": "1.0",
+  "description": "划词翻译并自动保存生词本的Chrome插件",
+  "permissions": [
+    "storage",
+    "activeTab"
+  ],
+  "host_permissions": [
+    "http://dict.youdao.com/*",
+    "https://dict.youdao.com/*"
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "128": "images/icon128.png"
+    }
+  },
+  "icons": {
+    "128": "images/icon128.png"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["storage.js", "content.js"],
+      "css": ["styles.css"],
+      "run_at": "document_start"
+    }
+  ],
+  "background": {
+    "service_worker": "background.js"
+  }
+} 

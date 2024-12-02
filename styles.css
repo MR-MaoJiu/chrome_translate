@@ -1,0 +1,87 @@
+.translate-popup {
+  position: absolute;
+  background: white;
+  border-radius: 8px;
+  padding: 12px 16px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  z-index: 10000;
+  max-width: 300px;
+  animation: fadeIn 0.2s ease-in-out;
+  border: 1px solid #e8e8e8;
+}
+
+.translation-content {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.translation-content .word {
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+}
+
+.translation-content .meaning {
+  font-size: 14px;
+  color: #666;
+  transition: filter 0.3s ease;
+}
+
+.hover-popup .translation-content .meaning {
+  filter: blur(3px);
+}
+
+.hover-popup .translation-content:hover .meaning {
+  filter: none;
+}
+
+.translate-popup:not(.hover-popup) .translation-content .meaning {
+  filter: none;
+}
+
+.translate-popup .close-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  cursor: pointer;
+  color: #999;
+  font-size: 14px;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+}
+
+.translate-popup .close-btn:hover {
+  background: #f5f5f5;
+  color: #666;
+}
+
+.known-word {
+  background-color: #fff3cd;
+  border-radius: 2px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.known-word:hover {
+  background-color: #ffe69c;
+}
+
+.hover-popup {
+  pointer-events: auto;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+} 
