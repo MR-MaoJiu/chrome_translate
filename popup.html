@@ -7,6 +7,22 @@
       width: 300px;
       padding: 10px;
     }
+    .tab-container {
+      display: flex;
+      margin-bottom: 10px;
+    }
+    .tab {
+      flex: 1;
+      padding: 8px;
+      text-align: center;
+      cursor: pointer;
+      background: #f5f5f5;
+      border: 1px solid #ddd;
+    }
+    .tab.active {
+      background: #fff;
+      border-bottom: none;
+    }
     .vocabulary-list {
       max-height: 400px;
       overflow-y: auto;
@@ -14,6 +30,9 @@
     .word-item {
       padding: 8px;
       border-bottom: 1px solid #eee;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
     }
     .word {
       font-weight: bold;
@@ -21,10 +40,20 @@
     .translation {
       color: #666;
     }
+    .move-btn {
+      padding: 4px 8px;
+      cursor: pointer;
+      background: #f0f0f0;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+    }
   </style>
 </head>
 <body>
-  <h2>我的生词本</h2>
+  <div class="tab-container">
+    <div class="tab active" data-tab="unknown">不认识的单词</div>
+    <div class="tab" data-tab="known">已认识的单词</div>
+  </div>
   <div id="vocabularyList" class="vocabulary-list"></div>
   <script src="popup.js"></script>
 </body>

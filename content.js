@@ -28,8 +28,11 @@ const removeExistingPopup = () => {
 };
 
 // 调用翻译API
-const translateWord = async (word) => {
+const translateWord = async (word, retryCount = 0) => {
   try {
+    // 最多重试2次
+    const maxRetries = 2;
+    
     const response = await chrome.runtime.sendMessage({
       action: 'translate',
       word: word
@@ -42,6 +45,13 @@ const translateWord = async (word) => {
     return response.translation;
   } catch (error) {
     console.error('翻译请求失败:', error);
+    
+    // 如果是扩展上下文失效错误且未超过重试次数，则等待后重试
+    if (error.message.includes('Extension context invalidated') && retryCount < 2) {
+      await new Promise(resolve => setTimeout(resolve, 500)); // 等待500ms
+      return translateWord(word, retryCount + 1);
+    }
+    
     return '翻译失败';
   }
 };
@@ -49,14 +59,28 @@ const translateWord = async (word) => {
 // 显示翻译结果
 const showTranslation = async (selectedText, popup, isHover = false) => {
   try {
+    // 先显示加载状态
+    popup.innerHTML = `
+      <div class="translation-content">
+        <div class="word">${selectedText}</div>
+        <div class="meaning">正在翻译...</div>
+      </div>
+    `;
+    
     const translation = await translateWord(selectedText);
+    
+    // 检查popup是否仍然存在（用户可能已关闭）
+    if (!document.contains(popup)) {
+      return;
+    }
+    
     // 如果不是悬浮显示，则保存到生词本
-    if (!isHover) {
+    if (!isHover && translation !== '翻译失败') {
       await saveToVocabulary(selectedText, translation);
       await highlightKnownWords();
     }
     
-    popup.innerHTML += `
+    popup.innerHTML = `
       <div class="translation-content">
         <div class="word">${selectedText}</div>
         <div class="meaning">${translation}</div>
@@ -64,12 +88,14 @@ const showTranslation = async (selectedText, popup, isHover = false) => {
     `;
   } catch (error) {
     console.error('翻译失败:', error);
-    popup.innerHTML += `
-      <div class="translation-content">
-        <div class="word">${selectedText}</div>
-        <div class="meaning">翻译失败，请重试</div>
-      </div>
-    `;
+    if (document.contains(popup)) {
+      popup.innerHTML = `
+        <div class="translation-content">
+          <div class="word">${selectedText}</div>
+          <div class="meaning">翻译失败，请重试</div>
+        </div>
+      `;
+    }
   }
 };
 
@@ -104,10 +130,20 @@ const highlightKnownWords = async () => {
       let text = node.textContent;
       let hasReplacement = false;
       
-      Object.entries(vocabulary).forEach(([word, translation]) => {
+      // 处理已认识的单词
+      Object.entries(vocabulary.known).forEach(([word, translation]) => {
         const regex = new RegExp(`\\b${word}\\b`, 'gi');
         if (regex.test(text)) {
           text = text.replace(regex, `<span class="known-word" data-word="${word}" data-translation="${translation}">$&</span>`);
+          hasReplacement = true;
+        }
+      });
+      
+      // 处理不认识的单词
+      Object.entries(vocabulary.unknown).forEach(([word, translation]) => {
+        const regex = new RegExp(`\\b${word}\\b`, 'gi');
+        if (regex.test(text)) {
+          text = text.replace(regex, `<span class="known-word unknown-word" data-word="${word}" data-translation="${translation}">$&</span>`);
           hasReplacement = true;
         }
       });

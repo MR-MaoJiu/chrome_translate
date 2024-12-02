@@ -61,14 +61,12 @@
 }
 
 .known-word {
-  background-color: #fff3cd;
-  border-radius: 2px;
+  background-color: #e6f3ff;
   cursor: pointer;
-  transition: background-color 0.2s;
 }
 
-.known-word:hover {
-  background-color: #ffe69c;
+.known-word.unknown-word {
+  background-color: #ffe6e6;
 }
 
 .hover-popup {
