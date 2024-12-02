@@ -16,6 +16,16 @@ async function displayVocabulary() {
   const targetType = currentTab === 'known' ? 'unknown' : 'known';
   const buttonText = currentTab === 'known' ? '标记为不认识' : '标记为已认识';
   
+  // 检查是否有单词
+  if (Object.keys(currentWords).length === 0) {
+    vocabularyList.innerHTML = `
+      <div class="empty-state">
+        ${currentTab === 'known' ? '还没有已掌握的单词' : '还没有收录新的单词'}
+      </div>
+    `;
+    return;
+  }
+  
   Object.entries(currentWords).forEach(([word, translation]) => {
     const wordItem = document.createElement('div');
     wordItem.className = `word-item ${currentTab}`;
@@ -33,8 +43,17 @@ async function displayVocabulary() {
   document.querySelectorAll('.move-btn').forEach(btn => {
     btn.addEventListener('click', async (e) => {
       const word = e.target.dataset.word;
-      await moveWord(word, currentTab, targetType);
-      displayVocabulary();
+      const wordItem = e.target.closest('.word-item');
+      
+      // 添加过渡动画
+      wordItem.style.transform = 'translateX(100%)';
+      wordItem.style.opacity = '0';
+      
+      // 等待动画完成后移动单词
+      setTimeout(async () => {
+        await moveWord(word, currentTab, targetType);
+        displayVocabulary();
+      }, 300);
     });
   });
 }
@@ -46,10 +65,20 @@ document.addEventListener('DOMContentLoaded', () => {
   // Tab切换事件
   document.querySelectorAll('.tab').forEach(tab => {
     tab.addEventListener('click', (e) => {
+      if (e.target.classList.contains('active')) return;
+      
       document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
       e.target.classList.add('active');
       currentTab = e.target.dataset.tab;
-      displayVocabulary();
+      
+      // 添加过渡动画
+      const list = document.getElementById('vocabularyList');
+      list.style.opacity = '0';
+      
+      setTimeout(() => {
+        displayVocabulary();
+        list.style.opacity = '1';
+      }, 200);
     });
   });
 });

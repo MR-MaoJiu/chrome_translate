@@ -4,112 +4,134 @@
   <meta charset="UTF-8">
   <style>
     body {
-      width: 320px;
-      padding: 16px;
+      width: 360px;
+      padding: 20px;
       margin: 0;
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background: #f8f9fa;
     }
     .tab-container {
       display: flex;
-      margin-bottom: 16px;
-      background: #f5f5f5;
-      padding: 4px;
-      border-radius: 8px;
+      margin-bottom: 20px;
+      background: #fff;
+      padding: 6px;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
     }
     .tab {
       flex: 1;
-      padding: 8px 12px;
+      padding: 10px 16px;
       text-align: center;
       cursor: pointer;
-      border-radius: 6px;
+      border-radius: 8px;
       color: #666;
       font-size: 14px;
       position: relative;
-      transition: all 0.2s;
+      transition: all 0.3s ease;
+      user-select: none;
     }
     .tab.active {
-      background: #fff;
-      color: #333;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      background: #4CAF50;
+      color: #fff;
+      font-weight: 500;
+    }
+    .tab:not(.active):hover {
+      background: #f1f3f4;
     }
     .tab-badge {
       position: absolute;
-      top: -6px;
-      right: -6px;
+      top: -8px;
+      right: -8px;
       background: #ff6b6b;
       color: white;
-      border-radius: 10px;
-      padding: 2px 6px;
+      border-radius: 12px;
+      padding: 2px 8px;
       font-size: 12px;
-      min-width: 8px;
-      text-align: center;
+      font-weight: 600;
+      box-shadow: 0 2px 4px rgba(255,107,107,0.3);
     }
     .vocabulary-list {
-      max-height: 400px;
+      max-height: 460px;
       overflow-y: auto;
       padding: 4px;
+      margin: 0 -4px;
     }
     .word-item {
-      padding: 12px;
-      border-radius: 8px;
+      padding: 16px;
+      border-radius: 12px;
       background: #fff;
-      margin-bottom: 8px;
+      margin-bottom: 12px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-      transition: all 0.2s;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+      transition: all 0.3s ease;
     }
     .word-item:hover {
-      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
     }
     .word-content {
       flex: 1;
     }
     .word {
       font-weight: 600;
-      color: #333;
-      margin-bottom: 4px;
+      color: #2c3e50;
+      margin-bottom: 6px;
+      font-size: 16px;
     }
     .translation {
       color: #666;
-      font-size: 13px;
+      font-size: 14px;
+      line-height: 1.4;
     }
     .move-btn {
-      padding: 6px 12px;
+      padding: 8px 16px;
       cursor: pointer;
-      background: #f0f0f0;
       border: none;
-      border-radius: 6px;
-      color: #666;
+      border-radius: 8px;
       font-size: 13px;
-      margin-left: 12px;
-      transition: all 0.2s;
-    }
-    .move-btn:hover {
-      background: #e0e0e0;
-      color: #333;
+      font-weight: 500;
+      margin-left: 16px;
+      transition: all 0.3s ease;
+      white-space: nowrap;
     }
     .unknown .move-btn {
-      color: #4CAF50;
+      background: #4CAF50;
+      color: white;
+    }
+    .unknown .move-btn:hover {
+      background: #43a047;
+      box-shadow: 0 2px 8px rgba(76,175,80,0.3);
     }
     .known .move-btn {
-      color: #f44336;
+      background: #ff6b6b;
+      color: white;
+    }
+    .known .move-btn:hover {
+      background: #ff5252;
+      box-shadow: 0 2px 8px rgba(255,107,107,0.3);
     }
     /* 自定义滚动条 */
     .vocabulary-list::-webkit-scrollbar {
-      width: 8px;
+      width: 6px;
     }
     .vocabulary-list::-webkit-scrollbar-track {
-      background: #f5f5f5;
-      border-radius: 4px;
+      background: transparent;
     }
     .vocabulary-list::-webkit-scrollbar-thumb {
       background: #ddd;
-      border-radius: 4px;
+      border-radius: 3px;
     }
     .vocabulary-list::-webkit-scrollbar-thumb:hover {
       background: #ccc;
+    }
+    /* 空状态提示 */
+    .empty-state {
+      text-align: center;
+      padding: 40px 20px;
+      color: #666;
+      font-size: 14px;
     }
   </style>
 </head>
@@ -125,6 +147,7 @@
     </div>
   </div>
   <div id="vocabularyList" class="vocabulary-list"></div>
+  <script src="storage.js"></script>
   <script src="popup.js"></script>
 </body>
 </html> 
