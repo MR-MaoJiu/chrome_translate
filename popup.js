@@ -6,6 +6,10 @@ async function displayVocabulary() {
   const result = await chrome.storage.sync.get('vocabulary');
   const vocabulary = result.vocabulary || { known: {}, unknown: {} };
 
+  // 更新计数器
+  document.getElementById('knownCount').textContent = Object.keys(vocabulary.known).length;
+  document.getElementById('unknownCount').textContent = Object.keys(vocabulary.unknown).length;
+
   vocabularyList.innerHTML = '';
   
   const currentWords = vocabulary[currentTab];
@@ -14,7 +18,7 @@ async function displayVocabulary() {
   
   Object.entries(currentWords).forEach(([word, translation]) => {
     const wordItem = document.createElement('div');
-    wordItem.className = 'word-item';
+    wordItem.className = `word-item ${currentTab}`;
     wordItem.innerHTML = `
       <div class="word-content">
         <div class="word">${word}</div>
