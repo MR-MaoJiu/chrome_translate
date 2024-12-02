@@ -79,4 +79,30 @@ async function updateLearningStreak() {
   });
   
   return streak;
+}
+
+// 获取今日复习记录
+async function getTodayReviewed() {
+  const today = new Date().toDateString();
+  const result = await chrome.storage.sync.get(['reviewProgress', 'lastReviewDate']);
+  
+  // 检查是否需要重置每日进度
+  if (result.lastReviewDate !== today) {
+    await chrome.storage.sync.set({
+      lastReviewDate: today,
+      reviewProgress: []
+    });
+    return [];
+  }
+  
+  return result.reviewProgress || [];
+}
+
+// 记录复习单词
+async function recordReviewedWord(word) {
+  const todayReviewed = await getTodayReviewed();
+  if (!todayReviewed.includes(word)) {
+    todayReviewed.push(word);
+    await chrome.storage.sync.set({ reviewProgress: todayReviewed });
+  }
 } 

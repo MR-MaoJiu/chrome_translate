@@ -7,13 +7,18 @@ async function updateStats() {
   const vocabulary = await getVocabulary();
   const knownCount = Object.keys(vocabulary.known).length;
   const unknownCount = Object.keys(vocabulary.unknown).length;
-  const totalCount = knownCount + unknownCount;
+  
+  // 获取今日复习数据
+  const todayReviewed = await getTodayReviewed();
+  const totalToReview = unknownCount;
+  const reviewProgress = totalToReview > 0 
+    ? Math.round((todayReviewed.length / totalToReview) * 100) 
+    : 0;
   
   // 更新统计数字
-  document.getElementById('totalCount').textContent = totalCount;
-  document.getElementById('masteryCount').textContent = knownCount;
-  document.getElementById('accuracyRate').textContent = 
-    totalCount > 0 ? Math.round((knownCount / totalCount) * 100) + '%' : '0%';
+  document.getElementById('totalCount').textContent = totalToReview;
+  document.getElementById('reviewedToday').textContent = todayReviewed.length;
+  document.getElementById('reviewProgress').textContent = `${reviewProgress}%`;
   
   // 更新标签数量
   document.getElementById('knownCount').textContent = knownCount;
