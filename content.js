@@ -1,6 +1,17 @@
 // 全局变量存储扩展状态
 let isExtensionValid = true;
 
+// 添加默认设置
+const defaultSettings = {
+  apiType: 'youdao',
+  customApiUrl: '',
+  apiKey: '',
+  autoSpeak: true,
+  showPhonetic: true,
+  showExample: true,
+  autoBlur: true
+};
+
 // 创建翻译弹窗
 const createTranslatePopup = () => {
   console.log('创建弹窗');
@@ -42,13 +53,12 @@ const translateWord = async (word, retryCount = 0) => {
       throw new Error(response?.error || '翻译失败');
     }
 
-    // 确保返回正确的数据结构
     return {
       translation: response.translation || '翻译失败',
       phonetic: response.phonetic || ''
     };
   } catch (error) {
-    console.error('翻译请求失败:', error);
+    console.error('翻译请求失败:', error, word);
     
     if (error.message.includes('Extension context invalidated') && retryCount < maxRetries) {
       await new Promise(resolve => setTimeout(resolve, 500));
@@ -93,7 +103,11 @@ const showTranslation = async (selectedText, popup, isHover = false) => {
       return;
     }
 
-    // 构建翻译内容
+    // 创建翻译内容容器
+    const content = document.createElement('div');
+    content.className = 'translation-content';
+
+    // 创建单词头部
     const wordHeader = document.createElement('div');
     wordHeader.className = 'word-header';
     
@@ -103,7 +117,7 @@ const showTranslation = async (selectedText, popup, isHover = false) => {
     wordDiv.textContent = selectedText;
     wordHeader.appendChild(wordDiv);
     
-    // 添加音标（如果设置允许）
+    // 只在设置允许时添加音标
     if (settings.showPhonetic && response.phonetic) {
       const phoneticDiv = document.createElement('div');
       phoneticDiv.className = 'phonetic';
@@ -111,7 +125,7 @@ const showTranslation = async (selectedText, popup, isHover = false) => {
       wordHeader.appendChild(phoneticDiv);
     }
     
-    // 添加朗读按钮（如果设置允许）
+    // 只在设置允许时添加朗读按钮
     if (settings.autoSpeak) {
       const speakBtn = document.createElement('button');
       speakBtn.className = 'speak-btn';
@@ -129,16 +143,18 @@ const showTranslation = async (selectedText, popup, isHover = false) => {
         speakBtn.click();
       }
     }
-    
-    // 创建翻译内容容器
-    const content = document.createElement('div');
-    content.className = 'translation-content';
+
     content.appendChild(wordHeader);
     
     // 添加翻译文本
     const meaningDiv = document.createElement('div');
-    meaningDiv.className = `meaning ${settings.autoBlur && isHover ? 'blur' : ''}`;
+    meaningDiv.className = 'meaning';
     meaningDiv.textContent = response.translation;
+
+    // 根据设置和悬停状态添加模糊效果
+    if (isHover && settings.autoBlur === true) {
+      meaningDiv.classList.add('blur');
+    }
     content.appendChild(meaningDiv);
     
     // 添加关闭按钮
@@ -155,9 +171,7 @@ const showTranslation = async (selectedText, popup, isHover = false) => {
     // 如果不是悬停显示且翻译成功，则保存到生词本
     if (!isHover && response.translation !== '翻译失败') {
       const saved = await saveToVocabulary(selectedText, response.translation);
-      if (!saved) {
-        console.error('保存单词失败:', selectedText);
-      } else {
+      if (saved) {
         await recordTodayWord(selectedText);
         await updateLearningStreak();
         await highlightKnownWords();
@@ -288,6 +302,7 @@ const handleHover = async (event) => {
     popup.style.left = `${rect.left + scrollLeft}px`;
     popup.style.top = `${rect.bottom + scrollTop + 5}px`;
 
+    // 传递 isHover=true，让翻译弹窗知道这是悬停显示
     await showTranslation(word, popup, true);
   } catch (error) {
     console.error('处理悬停失败:', error);
@@ -302,7 +317,7 @@ const initEventListeners = () => {
   // 鼠标悬停事件
   document.addEventListener('mouseover', debounce(handleHover, 200));
 
-  // 点击事件关闭弹窗（点击弹窗外部或关闭按钮时关闭）
+  // 点击事件闭弹窗（点击弹窗外部或关闭按钮时关闭）
   document.addEventListener('click', (e) => {
     if (!e.target.closest('.translate-popup')) {
       removeExistingPopup();
@@ -314,13 +329,31 @@ const initEventListeners = () => {
 };
 
 // 初始化扩展
-const initializeExtension = async () => {
+const initializeExtension = async (retryCount = 0) => {
   try {
     console.log('初始化扩展');
+    
+    // 检查 chrome.storage 是否可用
+    if (!chrome || !chrome.storage || !chrome.storage.sync) {
+      throw new Error('chrome.storage 不可用');
+    }
+
+    // 确保词汇本数据已加载
+    const vocabulary = await getVocabulary();
+    if (!vocabulary || (!vocabulary.known && !vocabulary.unknown)) {
+      throw new Error('词汇本数据未正确加载');
+    }
+    
     await highlightKnownWords();
     initEventListeners();
   } catch (error) {
     console.error('初始化扩展失败:', error);
+    
+    // 如果失败且未超过最大重试次数，则等待后重试
+    if (retryCount < 3) {
+      console.log(`重试初始化 (${retryCount + 1}/3)`);
+      setTimeout(() => initializeExtension(retryCount + 1), 1000);
+    }
   }
 };
 
@@ -330,6 +363,10 @@ chrome.storage.onChanged.addListener((changes, namespace) => {
     console.log('设置已更新:', changes.settings.newValue);
     // 移除现有弹窗，确保新弹窗使用最新设置
     removeExistingPopup();
+    
+    // 重新应用设置
+    const newSettings = changes.settings.newValue;
+    console.log('新的自动模糊设置:', newSettings.autoBlur);
   }
 });
 
@@ -341,9 +378,21 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   }
 });
 
-// 确保DOM加载完成后再初始化
+// 确保在正确的时机初始化
 if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', initializeExtension);
+  document.addEventListener('DOMContentLoaded', () => {
+    // 确保 chrome.storage 已经准备好
+    if (chrome && chrome.storage) {
+      initializeExtension();
+    } else {
+      console.error('chrome.storage 未准备好');
+    }
+  });
 } else {
-  initializeExtension();
+  // 确保 chrome.storage 已经准备好
+  if (chrome && chrome.storage) {
+    initializeExtension();
+  } else {
+    console.error('chrome.storage 未准备好');
+  }
 } 

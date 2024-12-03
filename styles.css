@@ -3,6 +3,7 @@
   background: white;
   border-radius: 12px;
   padding: 16px 20px;
+  padding-right: 40px;
   box-shadow: 0 4px 20px rgba(0,0,0,0.15);
   z-index: 10000;
   max-width: 320px;
@@ -22,7 +23,7 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  padding-right: 32px;
+  padding-right: 24px;
 }
 
 .word {
@@ -36,6 +37,10 @@
   font-size: 14px;
   font-family: monospace;
   margin: 0 8px;
+  display: none;
+}
+
+.phonetic.show {
   display: inline-block;
 }
 
@@ -47,12 +52,16 @@
   color: #666;
   border-radius: 50%;
   cursor: pointer;
-  display: inline-flex;
+  display: none;
   align-items: center;
   justify-content: center;
   transition: all 0.3s ease;
   padding: 0;
   font-size: 16px;
+}
+
+.speak-btn.show {
+  display: inline-flex;
 }
 
 .speak-btn:hover {
@@ -68,16 +77,18 @@
 }
 
 .meaning.blur {
-  filter: blur(3px);
+  filter: blur(4px);
   transition: filter 0.3s ease;
+  user-select: none;
 }
 
 .meaning.blur:hover {
   filter: none;
+  user-select: auto;
 }
 
 .hover-popup .meaning {
-  filter: blur(3px);
+  filter: none;
 }
 
 .hover-popup:hover .meaning {
@@ -86,8 +97,8 @@
 
 .translate-popup .close-btn {
   position: absolute;
-  top: 12px;
-  right: 12px;
+  top: 8px;
+  right: 8px;
   cursor: pointer;
   color: #999;
   font-size: 18px;
@@ -99,6 +110,7 @@
   border-radius: 50%;
   transition: all 0.3s ease;
   background: transparent;
+  margin: 4px;
 }
 
 .translate-popup .close-btn:hover {
@@ -166,5 +178,14 @@
 
 .hover-popup {
   pointer-events: auto;
+}
+
+/* 确保模糊效果在悬停时正确显示 */
+.hover-popup .meaning.blur {
+  filter: blur(4px);
+}
+
+.hover-popup .meaning.blur:hover {
+  filter: none;
 }
  

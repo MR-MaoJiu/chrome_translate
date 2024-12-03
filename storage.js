@@ -1,13 +1,14 @@
 // 保存单词到生词本
 const saveToVocabulary = async (word, translation) => {
   try {
+    // 检查 chrome.storage 是否可用
+    if (!chrome || !chrome.storage || !chrome.storage.sync) {
+      console.error('chrome.storage 不可用');
+      return false;
+    }
+
     // 获取现有词汇本，确保数据结构完整
-    const result = await chrome.storage.sync.get('vocabulary');
-    const vocabulary = result.vocabulary || { known: {}, unknown: {} };
-    
-    // 确保 known 和 unknown 对象存在
-    if (!vocabulary.known) vocabulary.known = {};
-    if (!vocabulary.unknown) vocabulary.unknown = {};
+    const vocabulary = await getVocabulary();
     
     // 保存单词
     vocabulary.unknown[word.toLowerCase()] = translation;
@@ -16,11 +17,7 @@ const saveToVocabulary = async (word, translation) => {
     await chrome.storage.sync.set({ vocabulary });
     return true;
   } catch (error) {
-    console.error('保存单词失败:', error, {
-      word,
-      translation,
-      vocabulary: await chrome.storage.sync.get('vocabulary')
-    });
+    console.error('保存单词失败:', error);
     return false;
   }
 };
@@ -28,6 +25,12 @@ const saveToVocabulary = async (word, translation) => {
 // 获取生词本
 const getVocabulary = async () => {
   try {
+    // 检查 chrome.storage 是否可用
+    if (!chrome || !chrome.storage || !chrome.storage.sync) {
+      console.error('chrome.storage 不可用');
+      return { known: {}, unknown: {} };
+    }
+
     const result = await chrome.storage.sync.get('vocabulary');
     const vocabulary = result.vocabulary || { known: {}, unknown: {} };
     
