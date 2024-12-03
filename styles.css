@@ -35,6 +35,8 @@
   color: #666;
   font-size: 14px;
   font-family: monospace;
+  margin: 0 8px;
+  display: inline-block;
 }
 
 .speak-btn {
@@ -45,7 +47,7 @@
   color: #666;
   border-radius: 50%;
   cursor: pointer;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
   transition: all 0.3s ease;
@@ -63,6 +65,15 @@
   font-size: 15px;
   color: #666;
   line-height: 1.5;
+}
+
+.meaning.blur {
+  filter: blur(3px);
+  transition: filter 0.3s ease;
+}
+
+.meaning.blur:hover {
+  filter: none;
 }
 
 .hover-popup .meaning {

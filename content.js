@@ -73,6 +73,14 @@ const showTranslation = async (selectedText, popup, isHover = false) => {
       </div>
     `;
     
+    // 获取最新设置
+    const result = await chrome.storage.sync.get('settings');
+    const settings = result.settings || {
+      showPhonetic: true,
+      autoSpeak: true,
+      autoBlur: true
+    };
+
     const response = await translateWord(selectedText);
     
     // 检查popup是否仍然存在
@@ -80,24 +88,19 @@ const showTranslation = async (selectedText, popup, isHover = false) => {
       return;
     }
 
-    // 获取设置
-    const result = await chrome.storage.sync.get('settings');
-    const settings = result.settings || {
-      showPhonetic: true,
-      autoSpeak: true
-    };
-    
     // 构建翻译内容
-    let translationHtml = `
+    const translationHtml = `
       <div class="translation-content">
         <div class="word-header">
           <div class="word">${selectedText}</div>
           ${settings.showPhonetic && response.phonetic ? 
             `<div class="phonetic">/${response.phonetic}/</div>` : 
             ''}
-          <button class="speak-btn" title="朗读单词">🔊</button>
+          ${settings.autoSpeak ? 
+            `<button class="speak-btn" title="朗读单词">🔊</button>` : 
+            ''}
         </div>
-        <div class="meaning">${response.translation}</div>
+        <div class="meaning ${settings.autoBlur && isHover ? 'blur' : ''}">${response.translation}</div>
       </div>
       <div class="close-btn">×</div>
     `;
@@ -112,11 +115,11 @@ const showTranslation = async (selectedText, popup, isHover = false) => {
         utterance.lang = 'en-US';
         speechSynthesis.speak(utterance);
       };
-    }
 
-    // 如果设置了自动朗读且不是悬停显示
-    if (settings.autoSpeak && !isHover) {
-      speakBtn?.click();
+      // 仅在设置开启且非悬停时自动朗读
+      if (settings.autoSpeak && !isHover) {
+        speakBtn.click();
+      }
     }
 
     // 重新绑定关闭按钮事件
@@ -296,6 +299,15 @@ const initializeExtension = async () => {
     console.error('初始化扩展失败:', error);
   }
 };
+
+// 添加设置变更监听
+chrome.storage.onChanged.addListener((changes, namespace) => {
+  if (namespace === 'sync' && changes.settings) {
+    console.log('设置已更新:', changes.settings.newValue);
+    // 移除现有弹窗，确保新弹窗使用最新设置
+    removeExistingPopup();
+  }
+});
 
 // 确保DOM加载完成后再初始化
 if (document.readyState === 'loading') {

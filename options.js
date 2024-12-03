@@ -6,8 +6,7 @@ const defaultSettings = {
   autoSpeak: true,
   showPhonetic: true,
   showExample: true,
-  dailyGoal: 20,
-  enableReview: true
+  autoBlur: true
 };
 
 // 加载设置
@@ -21,29 +20,29 @@ async function loadSettings() {
   document.getElementById('autoSpeak').checked = settings.autoSpeak;
   document.getElementById('showPhonetic').checked = settings.showPhonetic;
   document.getElementById('showExample').checked = settings.showExample;
-  document.getElementById('dailyGoal').value = settings.dailyGoal;
-  document.getElementById('enableReview').checked = settings.enableReview;
-  
-  // 显示/隐藏自定义API设置
-  document.getElementById('customApiSettings').style.display = 
-    settings.apiType === 'custom' ? 'block' : 'none';
+  document.getElementById('autoBlur').checked = settings.autoBlur;
 }
 
 // 保存设置
 async function saveSettings() {
-  const settings = {
-    apiType: document.getElementById('apiType').value,
-    customApiUrl: document.getElementById('customApiUrl').value,
-    apiKey: document.getElementById('apiKey').value,
-    autoSpeak: document.getElementById('autoSpeak').checked,
-    showPhonetic: document.getElementById('showPhonetic').checked,
-    showExample: document.getElementById('showExample').checked,
-    dailyGoal: parseInt(document.getElementById('dailyGoal').value),
-    enableReview: document.getElementById('enableReview').checked
-  };
-  
-  await chrome.storage.sync.set({ settings });
-  showNotification();
+  try {
+    const settings = {
+      apiType: document.getElementById('apiType').value,
+      customApiUrl: document.getElementById('customApiUrl').value,
+      apiKey: document.getElementById('apiKey').value,
+      autoSpeak: document.getElementById('autoSpeak').checked,
+      showPhonetic: document.getElementById('showPhonetic').checked,
+      showExample: document.getElementById('showExample').checked,
+      autoBlur: document.getElementById('autoBlur').checked
+    };
+    
+    await chrome.storage.sync.set({ settings });
+    
+    // 通知保存成功
+    showNotification();
+  } catch (error) {
+    console.error('保存设置失败:', error);
+  }
 }
 
 // 显示保存成功提示
