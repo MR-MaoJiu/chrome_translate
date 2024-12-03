@@ -7,8 +7,7 @@ const defaultSettings = {
   showPhonetic: true,
   showExample: true,
   autoBlur: true,
-  dailyGoal: 20,
-  enableReview: true
+  pronunciationType: '0'
 };
 
 // 加载设置
@@ -27,6 +26,7 @@ async function loadSettings() {
     document.getElementById('autoBlur').checked = settings.autoBlur;
     document.getElementById('dailyGoal').value = settings.dailyGoal;
     document.getElementById('enableReview').checked = settings.enableReview;
+    document.getElementById('pronunciationType').value = settings.pronunciationType;
     
     // 显示/隐藏自定义API设置
     document.getElementById('customApiSettings').style.display = 
@@ -51,7 +51,8 @@ async function saveSettings() {
       showExample: document.getElementById('showExample').checked,
       autoBlur: document.getElementById('autoBlur').checked,
       dailyGoal: parseInt(document.getElementById('dailyGoal').value) || 20,
-      enableReview: document.getElementById('enableReview').checked
+      enableReview: document.getElementById('enableReview').checked,
+      pronunciationType: document.getElementById('pronunciationType').value
     };
     
     // 保存到 chrome.storage.sync

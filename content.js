@@ -9,7 +9,8 @@ const defaultSettings = {
   autoSpeak: true,
   showPhonetic: true,
   showExample: true,
-  autoBlur: true
+  autoBlur: true,
+  pronunciationType: '0'
 };
 
 // 创建翻译弹窗
@@ -142,9 +143,7 @@ const showTranslation = async (selectedText, popup, isHover = false) => {
       speakBtn.title = '朗读单词';
       speakBtn.textContent = '🔊';
       speakBtn.onclick = () => {
-        const utterance = new SpeechSynthesisUtterance(selectedText);
-        utterance.lang = 'en-US';
-        speechSynthesis.speak(utterance);
+        playWordAudio(selectedText);
       };
       wordHeader.appendChild(speakBtn);
       
@@ -400,7 +399,7 @@ chrome.storage.onChanged.addListener((changes, namespace) => {
   }
 });
 
-// 监听设置变更消息
+// 监听���置变更消息
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.type === 'settingsUpdated') {
     console.log('收到设置更新:', message.settings);
@@ -424,5 +423,21 @@ if (document.readyState === 'loading') {
     initializeExtension();
   } else {
     console.error('chrome.storage 未准备好');
+  }
+}
+
+// 播放单词发音
+async function playWordAudio(word) {
+  try {
+    const settings = await getSettings();
+    const type = settings.pronunciationType || '0';
+    const audioUrl = `http://dict.youdao.com/dictvoice?type=${type}&audio=${encodeURIComponent(word)}`;
+    
+    const audio = new Audio(audioUrl);
+    audio.play().catch(error => {
+      console.error('播放发音失败:', error);
+    });
+  } catch (error) {
+    console.error('获取发音设置失败:', error);
   }
 } 
