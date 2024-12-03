@@ -62,6 +62,17 @@ const translateWord = async (word, retryCount = 0) => {
   }
 };
 
+// 获取设置
+async function getSettings() {
+  try {
+    const result = await chrome.storage.sync.get('settings');
+    return { ...defaultSettings, ...result.settings };
+  } catch (error) {
+    console.error('获取设置失败:', error);
+    return defaultSettings;
+  }
+}
+
 // 显示翻译结果
 const showTranslation = async (selectedText, popup, isHover = false) => {
   try {
@@ -74,13 +85,7 @@ const showTranslation = async (selectedText, popup, isHover = false) => {
     `;
     
     // 获取最新设置
-    const result = await chrome.storage.sync.get('settings');
-    const settings = result.settings || {
-      showPhonetic: true,
-      autoSpeak: true,
-      autoBlur: true
-    };
-
+    const settings = await getSettings();
     const response = await translateWord(selectedText);
     
     // 检查popup是否仍然存在
@@ -89,44 +94,63 @@ const showTranslation = async (selectedText, popup, isHover = false) => {
     }
 
     // 构建翻译内容
-    const translationHtml = `
-      <div class="translation-content">
-        <div class="word-header">
-          <div class="word">${selectedText}</div>
-          ${settings.showPhonetic && response.phonetic ? 
-            `<div class="phonetic">/${response.phonetic}/</div>` : 
-            ''}
-          ${settings.autoSpeak ? 
-            `<button class="speak-btn" title="朗读单词">🔊</button>` : 
-            ''}
-        </div>
-        <div class="meaning ${settings.autoBlur && isHover ? 'blur' : ''}">${response.translation}</div>
-      </div>
-      <div class="close-btn">×</div>
-    `;
+    const wordHeader = document.createElement('div');
+    wordHeader.className = 'word-header';
     
-    popup.innerHTML = translationHtml;
-
-    // 绑定朗读按钮事件
-    const speakBtn = popup.querySelector('.speak-btn');
-    if (speakBtn) {
+    // 添加单词
+    const wordDiv = document.createElement('div');
+    wordDiv.className = 'word';
+    wordDiv.textContent = selectedText;
+    wordHeader.appendChild(wordDiv);
+    
+    // 添加音标（如果设置允许）
+    if (settings.showPhonetic && response.phonetic) {
+      const phoneticDiv = document.createElement('div');
+      phoneticDiv.className = 'phonetic';
+      phoneticDiv.textContent = `/${response.phonetic}/`;
+      wordHeader.appendChild(phoneticDiv);
+    }
+    
+    // 添加朗读按钮（如果设置允许）
+    if (settings.autoSpeak) {
+      const speakBtn = document.createElement('button');
+      speakBtn.className = 'speak-btn';
+      speakBtn.title = '朗读单词';
+      speakBtn.textContent = '🔊';
       speakBtn.onclick = () => {
         const utterance = new SpeechSynthesisUtterance(selectedText);
         utterance.lang = 'en-US';
         speechSynthesis.speak(utterance);
       };
-
-      // 仅在设置开启且非悬停时自动朗读
-      if (settings.autoSpeak && !isHover) {
+      wordHeader.appendChild(speakBtn);
+      
+      // 自动朗读（如果不是悬停模式）
+      if (!isHover) {
         speakBtn.click();
       }
     }
-
-    // 重新绑定关闭按钮事件
-    const closeBtn = popup.querySelector('.close-btn');
-    if (closeBtn) {
-      closeBtn.onclick = removeExistingPopup;
-    }
+    
+    // 创建翻译内容容器
+    const content = document.createElement('div');
+    content.className = 'translation-content';
+    content.appendChild(wordHeader);
+    
+    // 添加翻译文本
+    const meaningDiv = document.createElement('div');
+    meaningDiv.className = `meaning ${settings.autoBlur && isHover ? 'blur' : ''}`;
+    meaningDiv.textContent = response.translation;
+    content.appendChild(meaningDiv);
+    
+    // 添加关闭按钮
+    const closeBtn = document.createElement('div');
+    closeBtn.className = 'close-btn';
+    closeBtn.textContent = '×';
+    closeBtn.onclick = removeExistingPopup;
+    
+    // 清空并重新添加内容
+    popup.innerHTML = '';
+    popup.appendChild(content);
+    popup.appendChild(closeBtn);
 
     // 如果不是悬停显示且翻译成功，则保存到生词本
     if (!isHover && response.translation !== '翻译失败') {
@@ -306,6 +330,14 @@ chrome.storage.onChanged.addListener((changes, namespace) => {
     console.log('设置已更新:', changes.settings.newValue);
     // 移除现有弹窗，确保新弹窗使用最新设置
     removeExistingPopup();
+  }
+});
+
+// 监听设置变更消息
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  if (message.type === 'settingsUpdated') {
+    console.log('收到设置更新:', message.settings);
+    removeExistingPopup(); // 移除现有弹窗，确保使用新设置
   }
 });
 

@@ -6,21 +6,37 @@ const defaultSettings = {
   autoSpeak: true,
   showPhonetic: true,
   showExample: true,
-  autoBlur: true
+  autoBlur: true,
+  dailyGoal: 20,
+  enableReview: true
 };
 
 // 加载设置
 async function loadSettings() {
-  const result = await chrome.storage.sync.get('settings');
-  const settings = result.settings || defaultSettings;
-  
-  document.getElementById('apiType').value = settings.apiType;
-  document.getElementById('customApiUrl').value = settings.customApiUrl;
-  document.getElementById('apiKey').value = settings.apiKey;
-  document.getElementById('autoSpeak').checked = settings.autoSpeak;
-  document.getElementById('showPhonetic').checked = settings.showPhonetic;
-  document.getElementById('showExample').checked = settings.showExample;
-  document.getElementById('autoBlur').checked = settings.autoBlur;
+  try {
+    const result = await chrome.storage.sync.get('settings');
+    const settings = { ...defaultSettings, ...result.settings };
+    
+    // 更新UI
+    document.getElementById('apiType').value = settings.apiType;
+    document.getElementById('customApiUrl').value = settings.customApiUrl;
+    document.getElementById('apiKey').value = settings.apiKey;
+    document.getElementById('autoSpeak').checked = settings.autoSpeak;
+    document.getElementById('showPhonetic').checked = settings.showPhonetic;
+    document.getElementById('showExample').checked = settings.showExample;
+    document.getElementById('autoBlur').checked = settings.autoBlur;
+    document.getElementById('dailyGoal').value = settings.dailyGoal;
+    document.getElementById('enableReview').checked = settings.enableReview;
+    
+    // 显示/隐藏自定义API设置
+    document.getElementById('customApiSettings').style.display = 
+      settings.apiType === 'custom' ? 'block' : 'none';
+      
+    return settings;
+  } catch (error) {
+    console.error('加载设置失败:', error);
+    return defaultSettings;
+  }
 }
 
 // 保存设置
@@ -33,12 +49,21 @@ async function saveSettings() {
       autoSpeak: document.getElementById('autoSpeak').checked,
       showPhonetic: document.getElementById('showPhonetic').checked,
       showExample: document.getElementById('showExample').checked,
-      autoBlur: document.getElementById('autoBlur').checked
+      autoBlur: document.getElementById('autoBlur').checked,
+      dailyGoal: parseInt(document.getElementById('dailyGoal').value) || 20,
+      enableReview: document.getElementById('enableReview').checked
     };
     
+    // 保存到 chrome.storage.sync
     await chrome.storage.sync.set({ settings });
     
-    // 通知保存成功
+    // 通知所有标签页设置已更新
+    const tabs = await chrome.tabs.query({});
+    tabs.forEach(tab => {
+      chrome.tabs.sendMessage(tab.id, { type: 'settingsUpdated', settings })
+        .catch(error => console.log('Tab not ready:', tab.id));
+    });
+    
     showNotification();
   } catch (error) {
     console.error('保存设置失败:', error);
@@ -55,13 +80,20 @@ function showNotification() {
 }
 
 // 初始化事件监听
-document.addEventListener('DOMContentLoaded', () => {
-  loadSettings();
+document.addEventListener('DOMContentLoaded', async () => {
+  // 加载设置
+  await loadSettings();
   
   // API类型切换
   document.getElementById('apiType').addEventListener('change', (e) => {
     document.getElementById('customApiSettings').style.display = 
       e.target.value === 'custom' ? 'block' : 'none';
+  });
+  
+  // 所有设置项的变更监听
+  const settingInputs = document.querySelectorAll('input, select');
+  settingInputs.forEach(input => {
+    input.addEventListener('change', saveSettings);
   });
   
   // 保存按钮
