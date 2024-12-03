@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "智能单词翻译助手",
+  "name": "英语阅读++",
   "version": "1.0",
-  "description": "划词翻译并自动保存生词本的Chrome插件",
+  "description": "划词翻译自动保存生词本并且可以复习的浏览器插件，助你快速提升词汇量。",
   "permissions": [
     "storage",
     "tabs",
