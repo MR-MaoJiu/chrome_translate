@@ -265,11 +265,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     playWordAudio(words[currentIndex][0]);
   });
   
-  // 修改显示释义按钮的事件处理
   document.getElementById('showBtn').addEventListener('click', () => {
     const meaningText = document.getElementById('meaningText');
     meaningText.classList.remove('hidden');
-    meaningText.style.opacity = '1'; // 确保动画效果正常
+    meaningText.style.opacity = '1';
     meaningText.style.transform = 'translateY(0)';
   });
   
@@ -284,7 +283,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   });
   
   // 听写模式按钮
-  document.getElementById('listeningRepeatBtn').addEventListener('click', () => {
+  document.getElementById('listeningSpeakBtn').addEventListener('click', () => {
     playWordAudio(words[currentIndex][0]);
   });
   
