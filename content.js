@@ -42,17 +42,23 @@ const translateWord = async (word, retryCount = 0) => {
       throw new Error(response?.error || '翻译失败');
     }
 
-    return response.translation;
+    // 确保返回正确的数据结构
+    return {
+      translation: response.translation || '翻译失败',
+      phonetic: response.phonetic || ''
+    };
   } catch (error) {
     console.error('翻译请求失败:', error);
     
-    // 如果是扩展上下文失效错误且未超过重试次数，则等待后重试
-    if (error.message.includes('Extension context invalidated') && retryCount < 2) {
-      await new Promise(resolve => setTimeout(resolve, 500)); // 等待500ms
+    if (error.message.includes('Extension context invalidated') && retryCount < maxRetries) {
+      await new Promise(resolve => setTimeout(resolve, 500));
       return translateWord(word, retryCount + 1);
     }
     
-    return '翻译失败';
+    return {
+      translation: '翻译失败',
+      phonetic: ''
+    };
   }
 };
 
@@ -69,21 +75,24 @@ const showTranslation = async (selectedText, popup, isHover = false) => {
     
     const response = await translateWord(selectedText);
     
-    // 检查popup是否仍然存在（用户可能已关闭）
+    // 检查popup是否仍然存在
     if (!document.contains(popup)) {
       return;
     }
 
     // 获取设置
-    const settings = await chrome.storage.sync.get('settings');
-    const { showPhonetic = true, autoSpeak = true } = settings.settings || {};
+    const result = await chrome.storage.sync.get('settings');
+    const settings = result.settings || {
+      showPhonetic: true,
+      autoSpeak: true
+    };
     
     // 构建翻译内容
     let translationHtml = `
       <div class="translation-content">
         <div class="word-header">
           <div class="word">${selectedText}</div>
-          ${showPhonetic && response.phonetic ? 
+          ${settings.showPhonetic && response.phonetic ? 
             `<div class="phonetic">/${response.phonetic}/</div>` : 
             ''}
           <button class="speak-btn" title="朗读单词">🔊</button>
@@ -106,7 +115,7 @@ const showTranslation = async (selectedText, popup, isHover = false) => {
     }
 
     // 如果设置了自动朗读且不是悬停显示
-    if (autoSpeak && !isHover) {
+    if (settings.autoSpeak && !isHover) {
       speakBtn?.click();
     }
 
@@ -116,12 +125,16 @@ const showTranslation = async (selectedText, popup, isHover = false) => {
       closeBtn.onclick = removeExistingPopup;
     }
 
-    // 如果不是悬停显示，则保存到生词本
+    // 如果不是悬停显示且翻译成功，则保存到生词本
     if (!isHover && response.translation !== '翻译失败') {
-      await saveToVocabulary(selectedText, response.translation);
-      await recordTodayWord(selectedText);
-      await updateLearningStreak();
-      await highlightKnownWords();
+      const saved = await saveToVocabulary(selectedText, response.translation);
+      if (!saved) {
+        console.error('保存单词失败:', selectedText);
+      } else {
+        await recordTodayWord(selectedText);
+        await updateLearningStreak();
+        await highlightKnownWords();
+      }
     }
   } catch (error) {
     console.error('翻译失败:', error);

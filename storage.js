@@ -1,22 +1,57 @@
 // 保存单词到生词本
 const saveToVocabulary = async (word, translation) => {
-  const vocabulary = await getVocabulary();
-  vocabulary.unknown[word.toLowerCase()] = translation;
-  
-  await chrome.storage.sync.set({ vocabulary });
+  try {
+    // 获取现有词汇本，确保数据结构完整
+    const result = await chrome.storage.sync.get('vocabulary');
+    const vocabulary = result.vocabulary || { known: {}, unknown: {} };
+    
+    // 确保 known 和 unknown 对象存在
+    if (!vocabulary.known) vocabulary.known = {};
+    if (!vocabulary.unknown) vocabulary.unknown = {};
+    
+    // 保存单词
+    vocabulary.unknown[word.toLowerCase()] = translation;
+    
+    // 保存更新后的词汇本
+    await chrome.storage.sync.set({ vocabulary });
+    return true;
+  } catch (error) {
+    console.error('保存单词失败:', error, {
+      word,
+      translation,
+      vocabulary: await chrome.storage.sync.get('vocabulary')
+    });
+    return false;
+  }
 };
 
 // 获取生词本
 const getVocabulary = async () => {
-  const result = await chrome.storage.sync.get('vocabulary');
-  return result.vocabulary || { known: {}, unknown: {} };
+  try {
+    const result = await chrome.storage.sync.get('vocabulary');
+    const vocabulary = result.vocabulary || { known: {}, unknown: {} };
+    
+    // 确保数据结构完整
+    if (!vocabulary.known) vocabulary.known = {};
+    if (!vocabulary.unknown) vocabulary.unknown = {};
+    
+    return vocabulary;
+  } catch (error) {
+    console.error('获取生词本失败:', error);
+    return { known: {}, unknown: {} };
+  }
 };
 
 // 检查单词是否存在于生词本
 const isWordKnown = async (word) => {
-  const vocabulary = await getVocabulary();
-  const lowercaseWord = word.toLowerCase();
-  return !!(vocabulary.known[lowercaseWord] || vocabulary.unknown[lowercaseWord]);
+  try {
+    const vocabulary = await getVocabulary();
+    const lowercaseWord = word.toLowerCase();
+    return !!(vocabulary.known[lowercaseWord] || vocabulary.unknown[lowercaseWord]);
+  } catch (error) {
+    console.error('检查单词状态失败:', error);
+    return false;
+  }
 };
 
 // 将单词在已认识和未认识之间移动

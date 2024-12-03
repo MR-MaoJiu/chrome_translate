@@ -108,11 +108,19 @@ async function translateWithCustomApi(word, settings) {
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.action === 'translate') {
     translateWord(request.word)
-      .then(translation => {
-        sendResponse({ translation });
+      .then(result => {
+        sendResponse({
+          translation: result.translation,
+          phonetic: result.phonetic,
+          error: null
+        });
       })
       .catch(error => {
-        sendResponse({ error: error.message });
+        sendResponse({
+          translation: null,
+          phonetic: null,
+          error: error.message
+        });
       });
     return true; // 保持消息通道打开
   }
