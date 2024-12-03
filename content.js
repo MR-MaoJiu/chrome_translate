@@ -53,9 +53,11 @@ const translateWord = async (word, retryCount = 0) => {
       throw new Error(response?.error || '翻译失败');
     }
 
+    // 确保返回完整的翻译数据
     return {
       translation: response.translation || '翻译失败',
-      phonetic: response.phonetic || ''
+      phonetic: response.phonetic || '',
+      example: response.example || null  // 添加例句数据
     };
   } catch (error) {
     console.error('翻译请求失败:', error, word);
@@ -67,7 +69,8 @@ const translateWord = async (word, retryCount = 0) => {
     
     return {
       translation: '翻译失败',
-      phonetic: ''
+      phonetic: '',
+      example: null
     };
   }
 };
@@ -94,9 +97,12 @@ const showTranslation = async (selectedText, popup, isHover = false) => {
       </div>
     `;
     
-    // 获取最新设置
+    // 获取最新设置和翻译
     const settings = await getSettings();
+    console.log('当前设置:', settings); // 添加日志
+
     const response = await translateWord(selectedText);
+    console.log('翻译响应:', response); // 添加日志
     
     // 检查popup是否仍然存在
     if (!document.contains(popup)) {
@@ -117,18 +123,22 @@ const showTranslation = async (selectedText, popup, isHover = false) => {
     wordDiv.textContent = selectedText;
     wordHeader.appendChild(wordDiv);
     
-    // 只在设置允许时添加音标
-    if (settings.showPhonetic && response.phonetic) {
+    // 添加音标（根据设置显示/隐藏）
+    if (response.phonetic) {
+      console.log('添加音标:', response.phonetic); // 添加日志
       const phoneticDiv = document.createElement('div');
       phoneticDiv.className = 'phonetic';
       phoneticDiv.textContent = `/${response.phonetic}/`;
+      if (settings.showPhonetic) {
+        phoneticDiv.classList.add('show');
+      }
       wordHeader.appendChild(phoneticDiv);
     }
     
-    // 只在设置允许时添加朗读按钮
+    // 添加朗读按钮（根据设置显示/隐藏）
     if (settings.autoSpeak) {
       const speakBtn = document.createElement('button');
-      speakBtn.className = 'speak-btn';
+      speakBtn.className = 'speak-btn show';
       speakBtn.title = '朗读单词';
       speakBtn.textContent = '🔊';
       speakBtn.onclick = () => {
@@ -138,7 +148,6 @@ const showTranslation = async (selectedText, popup, isHover = false) => {
       };
       wordHeader.appendChild(speakBtn);
       
-      // 自动朗读（如果不是悬停模式）
       if (!isHover) {
         speakBtn.click();
       }
@@ -151,7 +160,28 @@ const showTranslation = async (selectedText, popup, isHover = false) => {
     meaningDiv.className = 'meaning';
     meaningDiv.textContent = response.translation;
 
-    // 根据设置和悬停状态添加模糊效果
+    // 添加例句（根据设置显示/隐藏）
+    if (response.example && settings.showExample) {
+      console.log('添加例句:', response.example); // 添加日志
+      const exampleDiv = document.createElement('div');
+      exampleDiv.className = 'example';
+      
+      const enDiv = document.createElement('div');
+      enDiv.className = 'en';
+      enDiv.textContent = response.example.en;
+      
+      const cnDiv = document.createElement('div');
+      cnDiv.className = 'cn';
+      cnDiv.textContent = response.example.cn;
+      
+      exampleDiv.appendChild(enDiv);
+      exampleDiv.appendChild(cnDiv);
+      exampleDiv.classList.add('show');
+      
+      content.appendChild(exampleDiv);
+    }
+
+    // 根据设置添加模糊效果
     if (isHover && settings.autoBlur === true) {
       meaningDiv.classList.add('blur');
     }

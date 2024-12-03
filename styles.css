@@ -38,10 +38,11 @@
   font-family: monospace;
   margin: 0 8px;
   display: none;
+  transition: all 0.3s ease;
 }
 
 .phonetic.show {
-  display: inline-block;
+  display: inline-block !important;
 }
 
 .speak-btn {
@@ -187,5 +188,31 @@
 
 .hover-popup .meaning.blur:hover {
   filter: none;
+}
+
+.example {
+  display: none;
+  margin-top: 12px;
+  padding: 12px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.example.show {
+  display: block !important;
+}
+
+.example .en {
+  font-size: 14px;
+  color: #2c3e50;
+  margin-bottom: 8px;
+  line-height: 1.5;
+}
+
+.example .cn {
+  font-size: 14px;
+  color: #666;
+  line-height: 1.5;
 }
  
