@@ -124,6 +124,10 @@ const showTranslation = async (selectedText, popup, isHover = false) => {
     wordDiv.textContent = selectedText;
     wordHeader.appendChild(wordDiv);
     
+    // 创建第二行容器
+    const secondLineDiv = document.createElement('div');
+    secondLineDiv.className = 'second-line';
+    
     // 添加音标（根据设置显示/隐藏）
     if (response.phonetic) {
       console.log('添加音标:', response.phonetic); // 添加日志
@@ -133,7 +137,7 @@ const showTranslation = async (selectedText, popup, isHover = false) => {
       if (settings.showPhonetic) {
         phoneticDiv.classList.add('show');
       }
-      wordHeader.appendChild(phoneticDiv);
+      secondLineDiv.appendChild(phoneticDiv);
     }
     
     // 添加朗读按钮（根据设置显示/隐藏）
@@ -145,7 +149,7 @@ const showTranslation = async (selectedText, popup, isHover = false) => {
       speakBtn.onclick = () => {
         playWordAudio(selectedText);
       };
-      wordHeader.appendChild(speakBtn);
+      secondLineDiv.appendChild(speakBtn);
       
       if (settings.autoSpeak === true && !isHover) {
         setTimeout(() => {
@@ -153,6 +157,9 @@ const showTranslation = async (selectedText, popup, isHover = false) => {
         }, 300);
       }
     }
+
+    // 将第二行添加到头部
+    wordHeader.appendChild(secondLineDiv);
 
     content.appendChild(wordHeader);
     
