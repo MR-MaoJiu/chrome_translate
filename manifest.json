@@ -40,5 +40,9 @@
       "resources": ["review.html", "storage.js"],
       "matches": ["<all_urls>"]
     }
-  ]
+  ],
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'; media-src 'self' https://dict.youdao.com/",
+    "sandbox": "sandbox allow-scripts; script-src 'self'"
+  }
 } 

@@ -13,6 +13,9 @@ const defaultSettings = {
   pronunciationType: '0'
 };
 
+// 添加一个变量来跟踪当前显示的弹窗对应的单词
+let currentPopupWord = null;
+
 // 创建翻译弹窗
 const createTranslatePopup = () => {
   console.log('创建弹窗');
@@ -36,6 +39,8 @@ const removeExistingPopup = () => {
   const existingPopup = document.querySelector('.translate-popup');
   if (existingPopup) {
     existingPopup.remove();
+    // 清除当前显示的单词记录
+    currentPopupWord = null;
   }
 };
 
@@ -90,6 +95,9 @@ async function getSettings() {
 // 显示翻译结果
 const showTranslation = async (selectedText, popup, isHover = false) => {
   try {
+    // 更新当前显示的单词
+    currentPopupWord = selectedText;
+
     // 先显示加载状态
     popup.innerHTML = `
       <div class="translation-content">
@@ -307,6 +315,12 @@ const handleHover = async (event) => {
     if (!knownWord) return;
 
     const word = knownWord.dataset.word;
+    
+    // 如果当前已经显示了这个单词的弹窗，就不再显示
+    if (currentPopupWord === word) {
+      return;
+    }
+
     const rect = knownWord.getBoundingClientRect();
     const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
     const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
