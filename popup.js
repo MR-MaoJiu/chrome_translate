@@ -4,25 +4,54 @@ let learningStreak = 0; // 连续学习天数
 
 // 更新统计数据
 async function updateStats() {
-  const vocabulary = await getVocabulary();
-  const knownCount = Object.keys(vocabulary.known).length;
-  const unknownCount = Object.keys(vocabulary.unknown).length;
-  
-  // 获取今日复习数据
-  const todayReviewed = await getTodayReviewed();
-  const totalToReview = unknownCount;
-  const reviewProgress = totalToReview > 0 
-    ? Math.round((todayReviewed.length / totalToReview) * 100) 
-    : 0;
-  
-  // 更新统计数字
-  document.getElementById('totalCount').textContent = totalToReview;
-  document.getElementById('reviewedToday').textContent = todayReviewed.length;
-  document.getElementById('reviewProgress').textContent = `${reviewProgress}%`;
-  
-  // 更新标签数量
-  document.getElementById('knownCount').textContent = knownCount;
-  document.getElementById('unknownCount').textContent = unknownCount;
+  try {
+    // 获取设置中的每日目标
+    const settings = await getSettings();
+    const dailyGoal = settings.dailyGoal || 20;
+
+    // 获取生词本数据
+    const vocabulary = await getVocabulary();
+    const unknownCount = Object.keys(vocabulary.unknown || {}).length;
+
+    // 获取今日已复习单词
+    const todayReviewed = await getTodayReviewed();
+    const reviewedCount = todayReviewed.length;
+
+    // 计算进度
+    const progress = Math.min((reviewedCount / dailyGoal) * 100, 100);
+
+    // 更新UI
+    document.getElementById('totalToReview').textContent = unknownCount;
+    document.getElementById('reviewedToday').textContent = reviewedCount;
+    document.getElementById('dailyProgress').textContent = `${Math.round(progress)}%`;
+    document.getElementById('progressFill').style.width = `${progress}%`;
+
+    // 更新标签数量
+    document.getElementById('knownCount').textContent = Object.keys(vocabulary.known || {}).length;
+    document.getElementById('unknownCount').textContent = unknownCount;
+  } catch (error) {
+    console.error('更新统计失败:', error);
+  }
+}
+
+// 获取设置
+async function getSettings() {
+  const result = await chrome.storage.sync.get('settings');
+  return result.settings || { dailyGoal: 20 };
+}
+
+// 获取生词本
+async function getVocabulary() {
+  const result = await chrome.storage.sync.get('vocabulary');
+  return result.vocabulary || { known: {}, unknown: {} };
+}
+
+// 获取今日已复习单词
+async function getTodayReviewed() {
+  const today = new Date().toISOString().split('T')[0];
+  const result = await chrome.storage.sync.get('reviewHistory');
+  const history = result.reviewHistory || {};
+  return history[today] || [];
 }
 
 // 打开复习模式
@@ -179,4 +208,16 @@ async function updateProgress() {
   if (learningStreak >= 7) document.getElementById('streak').classList.add('active');
   if (totalCount >= 100) document.getElementById('total').classList.add('active');
   if (masteryRate >= 80) document.getElementById('mastery').classList.add('active');
-} 
+}
+
+// 初始化
+document.addEventListener('DOMContentLoaded', async () => {
+  await updateStats();
+});
+
+// 监听存储变化
+chrome.storage.onChanged.addListener((changes, namespace) => {
+  if (namespace === 'sync' && (changes.vocabulary || changes.reviewHistory)) {
+    updateStats();
+  }
+}); 

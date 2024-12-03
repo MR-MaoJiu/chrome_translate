@@ -331,34 +331,44 @@
   </style>
 </head>
 <body>
-  <div class="header">
+  <div class="review-header">
     <div class="stats-container">
-      <div class="stats-item">
-        <div class="stats-icon">📚</div>
-        <div class="stats-value" id="totalCount">0</div>
-        <div class="stats-label">待复习</div>
+      <div class="stat-card">
+        <div class="stat-icon">📚</div>
+        <div class="stat-content">
+          <div class="stat-value" id="totalToReview">0</div>
+          <div class="stat-label">待复习</div>
+        </div>
       </div>
-      <div class="stats-item">
-        <div class="stats-icon">✨</div>
-        <div class="stats-value" id="reviewedToday">0</div>
-        <div class="stats-label">今日已复习</div>
+      <div class="stat-card">
+        <div class="stat-icon">✅</div>
+        <div class="stat-content">
+          <div class="stat-value" id="reviewedToday">0</div>
+          <div class="stat-label">今日已复习</div>
+        </div>
       </div>
-      <div class="stats-item">
-        <div class="stats-icon">🎯</div>
-        <div class="stats-value" id="reviewProgress">0%</div>
-        <div class="stats-label">复习进度</div>
+      <div class="stat-card">
+        <div class="stat-icon">🎯</div>
+        <div class="stat-content">
+          <div class="stat-value" id="dailyProgress">0%</div>
+          <div class="stat-label">学习进度</div>
+        </div>
       </div>
     </div>
-    <div class="quick-actions">
-      <button class="action-btn" id="reviewBtn">
-        <span class="action-icon">🔄</span>
-        <span class="action-text">开始复习</span>
-      </button>
-      <button class="action-btn" id="settingsBtn">
-        <span class="action-icon">⚙️</span>
-        <span class="action-text">设置</span>
-      </button>
+    <div class="progress-bar">
+      <div class="progress-fill" id="progressFill"></div>
     </div>
+  </div>
+
+  <div class="quick-actions">
+    <button class="action-btn" id="reviewBtn">
+      <span class="action-icon">🔄</span>
+      <span class="action-text">开始复习</span>
+    </button>
+    <button class="action-btn" id="settingsBtn">
+      <span class="action-icon">⚙️</span>
+      <span class="action-text">设置</span>
+    </button>
   </div>
 
   <div class="tab-container">
