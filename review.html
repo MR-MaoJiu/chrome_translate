@@ -3,588 +3,124 @@
 <head>
   <meta charset="UTF-8">
   <title>单词复习</title>
-  <style>
-    body {
-      margin: 0;
-      padding: 40px;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background: linear-gradient(135deg, #f5f7fa 0%, #e4e9f2 100%);
-      min-height: 100vh;
-      color: #2c3e50;
-    }
-
-    .container {
-      max-width: 800px;
-      margin: 0 auto;
-    }
-
-    .header {
-      text-align: center;
-      margin-bottom: 32px;
-    }
-
-    h1 {
-      margin: 0 0 24px;
-      color: #2c3e50;
-      font-size: 32px;
-      font-weight: 600;
-    }
-
-    .progress {
-      background: white;
-      padding: 24px;
-      border-radius: 16px;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-      margin-bottom: 32px;
-    }
-
-    .progress-text {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 16px;
-      color: #666;
-      font-size: 15px;
-      font-weight: 500;
-    }
-
-    .progress-bar {
-      height: 10px;
-      background: #f1f3f4;
-      border-radius: 5px;
-      overflow: hidden;
-    }
-
-    .progress-fill {
-      height: 100%;
-      background: linear-gradient(90deg, #4CAF50, #81C784);
-      border-radius: 5px;
-      transition: width 0.5s ease;
-    }
-
-    .card {
-      background: white;
-      border-radius: 24px;
-      padding: 40px;
-      box-shadow: 0 8px 32px rgba(0,0,0,0.08);
-      text-align: center;
-      margin-bottom: 24px;
-      max-width: 600px;
-      margin: 0 auto;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .card::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: 4px;
-      background: linear-gradient(90deg, #4CAF50, #81C784);
-    }
-
-    .word-section {
-      margin-bottom: 40px;
-      padding: 24px;
-      background: #f8f9fa;
-      border-radius: 16px;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
-
-    .word {
-      font-size: 48px;
-      font-weight: 700;
-      color: #2c3e50;
-      margin-bottom: 16px;
-      letter-spacing: 0.5px;
-    }
-
-    .phonetic {
-      color: #666;
-      font-size: 18px;
-      font-family: monospace;
-      min-height: 24px;
-    }
-
-    .meaning {
-      font-size: 22px;
-      color: #666;
-      margin: 24px auto;
-      line-height: 1.6;
-      max-width: 480px;
-      transition: all 0.3s ease;
-      padding: 20px;
-      background: white;
-      border-radius: 12px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-    }
-
-    .meaning.hidden {
-      opacity: 0;
-    }
-
-    .mode-selector {
-      display: flex;
-      gap: 12px;
-      margin: 32px auto;
-      padding: 0;
-      max-width: 480px;
-    }
-
-    .mode-btn {
-      flex: 1;
-      padding: 16px 20px;
-      border: none;
-      border-radius: 14px;
-      background: #f5f7fa;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .mode-btn:hover {
-      transform: translateY(-2px);
-      background: #eef2f7;
-    }
-
-    .mode-btn.active {
-      background: #4CAF50;
-      color: white;
-      transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(76,175,80,0.2);
-    }
-
-    .mode-icon {
-      font-size: 28px;
-      margin-bottom: 4px;
-    }
-
-    .mode-text {
-      font-size: 15px;
-      font-weight: 500;
-    }
-
-    .buttons {
-      display: flex;
-      gap: 16px;
-      justify-content: center;
-      margin-top: 32px;
-      padding: 0 20px;
-    }
-
-    .btn {
-      padding: 14px 28px;
-      border: none;
-      border-radius: 12px;
-      font-size: 16px;
-      font-weight: 500;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      min-width: 120px;
-    }
-
-    .btn-speak {
-      background: #f5f7fa;
-      color: #666;
-      width: 48px;
-      height: 48px;
-      padding: 0;
-      justify-content: center;
-      font-size: 20px;
-    }
-
-    .btn-speak:hover {
-      background: #eef2f7;
-      color: #4CAF50;
-    }
-
-    .btn-show {
-      background: #f5f7fa;
-      color: #666;
-      min-width: 120px;
-    }
-
-    .btn-show:hover {
-      background: #eef2f7;
-    }
-
-    .btn-next {
-      background: #4CAF50;
-      color: white;
-      min-width: 120px;
-    }
-
-    .btn-next:hover {
-      background: #43a047;
-      transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(76,175,80,0.2);
-    }
-
-    .spelling-input {
-      margin: 32px auto;
-      text-align: center;
-      max-width: 400px;
-    }
-
-    .spelling-input input {
-      width: 100%;
-      padding: 16px 24px;
-      border: 2px solid #eef2f7;
-      border-radius: 12px;
-      font-size: 18px;
-      text-align: center;
-      transition: all 0.3s ease;
-      margin-bottom: 16px;
-    }
-
-    .spelling-input input:focus {
-      outline: none;
-      border-color: #4CAF50;
-      box-shadow: 0 0 0 3px rgba(76,175,80,0.1);
-    }
-
-    .spelling-hint {
-      margin-top: 16px;
-      color: #666;
-      font-size: 18px;
-      letter-spacing: 6px;
-      font-family: monospace;
-    }
-
-    .listening-mode {
-      margin: 32px auto;
-      max-width: 480px;
-    }
-
-    .listening-mode .btn-speak {
-      width: 96px;
-      height: 96px;
-      font-size: 40px;
-      margin: 0 auto 24px;
-      border-radius: 48px;
-      background: #4CAF50;
-      color: white;
-      box-shadow: 0 4px 12px rgba(76,175,80,0.2);
-    }
-
-    .listening-mode .btn-speak:hover {
-      transform: scale(1.05);
-      box-shadow: 0 6px 16px rgba(76,175,80,0.3);
-    }
-
-    .listening-mode input {
-      width: 100%;
-      padding: 20px 24px;
-      border: 2px solid #e0e3e7;
-      border-radius: 12px;
-      font-size: 20px;
-      text-align: center;
-      transition: all 0.3s ease;
-      background: white;
-      margin-top: 24px;
-    }
-
-    .result-feedback {
-      margin: 20px auto 0;
-      padding: 16px 24px;
-      border-radius: 12px;
-      font-weight: 500;
-      font-size: 16px;
-      max-width: 480px;
-      opacity: 0;
-      transition: all 0.3s ease;
-    }
-
-    .result-feedback.correct {
-      background: rgba(76,175,80,0.1);
-      color: #43a047;
-      transform: translateY(0);
-    }
-
-    .result-feedback.incorrect {
-      background: rgba(244,67,54,0.1);
-      color: #f44336;
-      transform: translateY(0);
-    }
-
-    .result-feedback.show {
-      opacity: 1;
-    }
-
-    .complete {
-      text-align: center;
-      padding: 48px;
-      background: white;
-      border-radius: 20px;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-    }
-
-    .complete-icon {
-      font-size: 72px;
-      margin-bottom: 24px;
-    }
-
-    .complete-text {
-      font-size: 28px;
-      color: #2c3e50;
-      margin-bottom: 36px;
-      font-weight: 600;
-    }
-
-    .stats {
-      display: flex;
-      gap: 24px;
-      justify-content: center;
-      margin-bottom: 36px;
-    }
-
-    .stat-item {
-      background: #f5f7fa;
-      padding: 24px 32px;
-      border-radius: 16px;
-      text-align: center;
-      min-width: 140px;
-    }
-
-    .stat-value {
-      font-size: 32px;
-      font-weight: 700;
-      color: #4CAF50;
-      margin-bottom: 8px;
-    }
-
-    .stat-label {
-      color: #666;
-      font-size: 15px;
-      font-weight: 500;
-    }
-
-    @keyframes shake {
-      0%, 100% { transform: translateX(0); }
-      25% { transform: translateX(-8px); }
-      75% { transform: translateX(8px); }
-    }
-
-    .shake {
-      animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both;
-    }
-
-    /* 统一输入区域样式 */
-    .input-section {
-      margin: 32px auto;
-      max-width: 480px;
-      padding: 24px;
-      background: #f8f9fa;
-      border-radius: 16px;
-      box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
-    }
-
-    .input-section input {
-      width: 100%;
-      padding: 16px 24px;
-      border: 2px solid #e0e3e7;
-      border-radius: 12px;
-      font-size: 20px;
-      text-align: center;
-      transition: all 0.3s ease;
-      background: white;
-      margin-bottom: 16px;
-    }
-
-    .input-section input:focus {
-      outline: none;
-      border-color: #4CAF50;
-      box-shadow: 0 0 0 4px rgba(76,175,80,0.1);
-    }
-
-    /* 听写模式样式 */
-    .listening-mode {
-      margin: 32px auto;
-      max-width: 480px;
-      text-align: center;
-    }
-
-    .listening-mode .btn-speak {
-      width: 96px;
-      height: 96px;
-      font-size: 40px;
-      margin: 0 auto 24px;
-      border-radius: 48px;
-      background: #4CAF50;
-      color: white;
-      box-shadow: 0 4px 12px rgba(76,175,80,0.2);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: all 0.3s ease;
-    }
-
-    .listening-mode .btn-speak:hover {
-      transform: scale(1.05);
-      box-shadow: 0 6px 16px rgba(76,175,80,0.3);
-    }
-
-    /* 反馈提示样式 */
-    .result-feedback {
-      margin: 16px auto 0;
-      padding: 12px 20px;
-      border-radius: 12px;
-      font-weight: 500;
-      font-size: 15px;
-      opacity: 0;
-      transition: all 0.3s ease;
-    }
-
-    .result-feedback.correct {
-      background: rgba(76,175,80,0.1);
-      color: #43a047;
-    }
-
-    .result-feedback.incorrect {
-      background: rgba(244,67,54,0.1);
-      color: #f44336;
-    }
-
-    .result-feedback.show {
-      opacity: 1;
-    }
-
-    /* 拼写提示样式 */
-    .spelling-hint {
-      margin: 12px 0;
-      color: #666;
-      font-size: 16px;
-      letter-spacing: 4px;
-      font-family: monospace;
-      min-height: 24px;
-    }
-
-    /* 添加关闭按钮样式 */
-    .close-btn {
-      position: absolute;
-      top: 16px;
-      right: 16px;
-      width: 32px;
-      height: 32px;
-      border: none;
-      background: #f5f7fa;
-      color: #666;
-      font-size: 20px;
-      border-radius: 50%;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: all 0.3s ease;
-    }
-
-    .close-btn:hover {
-      background: #e8eaed;
-      color: #f44336;
-      transform: rotate(90deg);
-    }
-
-    /* 添加例句样式 */
-    .example {
-      margin-top: 16px;
-      padding: 16px;
-      background: #f8f9fa;
-      border-radius: 12px;
-      font-size: 15px;
-      line-height: 1.6;
-      color: #666;
-      white-space: pre-line;
-      transition: opacity 0.3s ease;
-    }
-
-    .example.hidden {
-      opacity: 0;
-    }
-  </style>
+  <link rel="stylesheet" href="review.css">
 </head>
 <body>
   <div class="container">
-    <div class="header">
-      <h1>单词复习</h1>
-      <div class="progress">
-        <div class="progress-text">
-          已复习 <span id="currentIndex">0</span> / <span id="totalWords">0</span>
+    <div class="review-header">
+      <div class="stats-container">
+        <div class="stat-card">
+          <div class="stat-icon">📚</div>
+          <div class="stat-content">
+            <div class="stat-value" id="totalToReview">0</div>
+            <div class="stat-label">待复习</div>
+          </div>
         </div>
-        <div class="progress-bar">
-          <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+        <div class="stat-card">
+          <div class="stat-icon">✅</div>
+          <div class="stat-content">
+            <div class="stat-value" id="reviewedToday">0</div>
+            <div class="stat-label">今日已复习</div>
+          </div>
         </div>
+        <div class="stat-card">
+          <div class="stat-icon">🎯</div>
+          <div class="stat-content">
+            <div class="stat-value" id="dailyProgress">0%</div>
+            <div class="stat-label">学习进度</div>
+          </div>
+        </div>
+      </div>
+      <div class="progress-bar">
+        <div class="progress-fill" id="progressFill"></div>
       </div>
     </div>
 
-    <div id="reviewCard" class="card">
-      <button class="close-btn" id="closeBtn">×</button>
-      <div class="word-section" id="wordSection">
-        <div class="word" id="wordText"></div>
+    <div class="review-modes">
+      <button class="mode-btn active" data-mode="flashcard">
+        <span class="mode-icon">🎴</span>
+        <span>闪卡模式</span>
+      </button>
+      <button class="mode-btn" data-mode="spelling">
+        <span class="mode-icon">✍️</span>
+        <span>拼写模式</span>
+      </button>
+      <button class="mode-btn" data-mode="listening">
+        <span class="mode-icon">🎧</span>
+        <span>听写模式</span>
+      </button>
+    </div>
+
+    <!-- 闪卡模式 -->
+    <div id="flashcardMode" class="review-card">
+      <div class="word-content">
+        <div class="word" id="currentWord"></div>
         <div class="phonetic" id="phoneticText"></div>
         <div class="meaning hidden" id="meaningText"></div>
       </div>
-
-      <div class="mode-selector">
-        <button class="mode-btn active" data-mode="flashcard">
-          <span class="mode-icon">🎴</span>
-          <span class="mode-text">闪卡模式</span>
+      <div class="card-controls">
+        <button class="control-btn" id="speakBtn">
+          <span class="btn-icon">🔊</span>
+          <span>朗读</span>
         </button>
-        <button class="mode-btn" data-mode="spelling">
-          <span class="mode-icon">✍️</span>
-          <span class="mode-text">拼写模式</span>
+        <button class="control-btn" id="showBtn">
+          <span class="btn-icon">👀</span>
+          <span>显示释义</span>
         </button>
-        <button class="mode-btn" data-mode="listening">
-          <span class="mode-icon">🎧</span>
-          <span class="mode-text">听写模式</span>
+        <button class="control-btn primary" id="nextBtn">
+          <span class="btn-icon">➡️</span>
+          <span>下一个</span>
         </button>
-      </div>
-
-      <div id="flashcardButtons" class="buttons">
-        <button class="btn btn-secondary" id="speakBtn">🔊 朗读</button>
-        <button class="btn btn-secondary" id="showBtn">显示释义</button>
-        <button class="btn btn-primary" id="nextBtn">下一个</button>
-      </div>
-
-      <div id="spellingInput" class="input-section" style="display: none;">
-        <input type="text" placeholder="输入单词..." autocomplete="off">
-        <div class="spelling-hint"></div>
-        <div class="result-feedback"></div>
-        <button class="btn btn-primary" id="spellingNextBtn">确认</button>
-      </div>
-
-      <div id="listeningMode" class="listening-mode" style="display: none;">
-        <button class="btn btn-speak" id="listeningSpeakBtn">🔊</button>
-        <div class="input-section">
-          <input type="text" placeholder="输入听到的单词..." autocomplete="off">
-          <div class="result-feedback"></div>
-          <button class="btn btn-primary" id="listeningNextBtn">确认</button>
-        </div>
       </div>
     </div>
 
-    <div id="completeView" class="complete" style="display: none;">
-      <div class="complete-icon">🎉</div>
-      <div class="complete-text">太棒了！今天的复习完成了</div>
-      <div class="stats">
-        <div class="stat-item">
-          <div class="stat-value" id="reviewedCount">0</div>
-          <div class="stat-label">已复习</div>
-        </div>
-        <div class="stat-item">
-          <div class="stat-value" id="accuracyRate">0%</div>
-          <div class="stat-label">正确率</div>
+    <!-- 拼写模式 -->
+    <div id="spellingMode" class="review-card" style="display: none;">
+      <div class="word-content">
+        <div class="meaning" id="spellingMeaning"></div>
+        <div class="spelling-input">
+          <input type="text" placeholder="请输入单词..." autocomplete="off">
+          <div class="spelling-hint"></div>
         </div>
       </div>
-      <button class="btn btn-next" onclick="window.close()">完成</button>
+      <div class="card-controls">
+        <button class="control-btn" id="spellingHintBtn">
+          <span class="btn-icon">💡</span>
+          <span>提示</span>
+        </button>
+        <button class="control-btn primary" id="spellingCheckBtn">
+          <span class="btn-icon">✓</span>
+          <span>检查</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- 听写模式 -->
+    <div id="listeningMode" class="review-card" style="display: none;">
+      <div class="word-content">
+        <div class="listening-controls">
+          <button class="control-btn large" id="listeningSpeakBtn">
+            <span class="btn-icon">🔊</span>
+          </button>
+          <div class="listening-hint">点击按钮收听单词</div>
+        </div>
+        <div class="listening-input">
+          <input type="text" placeholder="请输入听到的单词..." autocomplete="off">
+        </div>
+      </div>
+      <div class="card-controls">
+        <button class="control-btn" id="listeningRepeatBtn">
+          <span class="btn-icon">🔄</span>
+          <span>重听</span>
+        </button>
+        <button class="control-btn primary" id="listeningCheckBtn">
+          <span class="btn-icon">✓</span>
+          <span>检查</span>
+        </button>
+      </div>
     </div>
   </div>
+
   <script src="storage.js"></script>
   <script src="review.js"></script>
 </body>

@@ -229,4 +229,77 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       });
     return true; // 保持消息通道打开
   }
-}); 
+});
+
+// 初始化提醒定时器
+let reviewTimer = null;
+
+// 设置提醒
+async function setupReviewReminder() {
+  try {
+    const result = await chrome.storage.sync.get('settings');
+    const settings = result.settings || {};
+    
+    // 清除现有定时器
+    if (reviewTimer) {
+      clearInterval(reviewTimer);
+      reviewTimer = null;
+    }
+    
+    if (!settings.enableReview) {
+      return;
+    }
+    
+    // 根据设置的间隔创建定时器
+    let interval;
+    switch (settings.reviewInterval) {
+      case 'minute':
+        interval = 60 * 1000; // 1分钟
+        break;
+      case 'hour':
+        interval = 60 * 60 * 1000; // 1小时
+        break;
+      case 'day':
+      default:
+        interval = 24 * 60 * 60 * 1000; // 1天
+    }
+    
+    reviewTimer = setInterval(async () => {
+      // 获取需要复习的单词数量
+      const vocabulary = await getVocabulary();
+      const unknownCount = Object.keys(vocabulary.unknown).length;
+      
+      if (unknownCount > 0) {
+        // 创建提醒通知
+        chrome.notifications.create({
+          type: 'basic',
+          iconUrl: 'images/icon128.png',
+          title: '单词复习提醒',
+          message: `您有 ${unknownCount} 个单词需要复习`,
+          buttons: [{ title: '开始复习' }],
+          requireInteraction: true
+        });
+      }
+    }, interval);
+  } catch (error) {
+    console.error('设置复习提醒失败:', error);
+  }
+}
+
+// 监听设置变更
+chrome.storage.onChanged.addListener((changes, namespace) => {
+  if (namespace === 'sync' && changes.settings) {
+    setupReviewReminder();
+  }
+});
+
+// 监听通知按钮点击
+chrome.notifications.onButtonClicked.addListener((notificationId, buttonIndex) => {
+  if (buttonIndex === 0) {
+    // 打开复习页面
+    chrome.tabs.create({ url: chrome.runtime.getURL('review.html') });
+  }
+});
+
+// 初始化时设置提醒
+setupReviewReminder(); 

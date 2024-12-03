@@ -7,7 +7,9 @@ const defaultSettings = {
   showPhonetic: true,
   showExample: true,
   autoBlur: true,
-  pronunciationType: '0'
+  pronunciationType: '0',
+  enableReview: false,
+  reviewInterval: 'day'
 };
 
 // 加载设置
@@ -27,6 +29,8 @@ async function loadSettings() {
     document.getElementById('dailyGoal').value = settings.dailyGoal;
     document.getElementById('enableReview').checked = settings.enableReview;
     document.getElementById('pronunciationType').value = settings.pronunciationType;
+    document.getElementById('reviewInterval').value = settings.reviewInterval;
+    document.getElementById('reviewInterval').disabled = !settings.enableReview;
     
     // 显示/隐藏自定义API设置
     document.getElementById('customApiSettings').style.display = 
@@ -52,7 +56,8 @@ async function saveSettings() {
       autoBlur: document.getElementById('autoBlur').checked,
       dailyGoal: parseInt(document.getElementById('dailyGoal').value) || 20,
       enableReview: document.getElementById('enableReview').checked,
-      pronunciationType: document.getElementById('pronunciationType').value
+      pronunciationType: document.getElementById('pronunciationType').value,
+      reviewInterval: document.getElementById('reviewInterval').value
     };
     
     // 保存到 chrome.storage.sync
@@ -99,4 +104,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   
   // 保存按钮
   document.getElementById('saveBtn').addEventListener('click', saveSettings);
+  
+  // 添加复习提醒开关联动
+  document.getElementById('enableReview').addEventListener('change', (e) => {
+    document.getElementById('reviewInterval').disabled = !e.target.checked;
+  });
 });
