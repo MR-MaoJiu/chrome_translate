@@ -78,9 +78,22 @@
 }
 
 .meaning {
-  font-size: 15px;
+  font-size: 18px;
   color: #666;
-  line-height: 1.5;
+  line-height: 1.6;
+  opacity: 0;
+  transform: translateY(10px);
+  transition: all 0.3s ease;
+}
+
+.meaning.hidden {
+  opacity: 0;
+  transform: translateY(10px);
+}
+
+.meaning:not(.hidden) {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 .meaning.blur {
@@ -559,5 +572,14 @@
   font-size: 48px;
   margin-bottom: 24px;
   color: #f44336;
+}
+
+/* 拼写模式的释义样式 */
+#spellingMeaning {
+  font-size: 18px;
+  color: #666;
+  line-height: 1.6;
+  margin-bottom: 20px;
+  display: block;
 }
  

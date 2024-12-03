@@ -85,6 +85,7 @@ async function showCurrentWord() {
         // 闪卡模式：显示单词，获取音标和发音
         document.getElementById('currentWord').textContent = word;
         document.getElementById('meaningText').textContent = translation;
+        // 初始时隐藏释义
         document.getElementById('meaningText').classList.add('hidden');
 
         try {
@@ -117,8 +118,10 @@ async function showCurrentWord() {
         break;
 
       case 'spelling':
-        // 拼写模式：只显示释义
-        document.getElementById('spellingMeaning').textContent = translation;
+        // 拼写模式：显示释义
+        const spellingMeaning = document.getElementById('spellingMeaning');
+        spellingMeaning.textContent = translation;
+        spellingMeaning.style.display = 'block'; // 确保释义显示
         document.querySelector('#spellingMode input').value = '';
         document.querySelector('.spelling-hint').textContent = '';
         break;
@@ -262,8 +265,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     playWordAudio(words[currentIndex][0]);
   });
   
+  // 修改显示释义按钮的事件处理
   document.getElementById('showBtn').addEventListener('click', () => {
-    document.getElementById('meaningText').classList.remove('hidden');
+    const meaningText = document.getElementById('meaningText');
+    meaningText.classList.remove('hidden');
+    meaningText.style.opacity = '1'; // 确保动画效果正常
+    meaningText.style.transform = 'translateY(0)';
   });
   
   document.getElementById('nextBtn').addEventListener('click', nextWord);
