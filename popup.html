@@ -333,6 +333,64 @@
     .action-text {
       white-space: nowrap;
     }
+    .review-header {
+      padding: 16px;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+      margin-bottom: 24px;
+    }
+    .stats-container {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+    .stat-card {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px;
+      background: #f8f9fa;
+      border-radius: 8px;
+      transition: all 0.3s ease;
+    }
+    .stat-icon {
+      font-size: 18px;
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+    .stat-content {
+      flex: 1;
+    }
+    .stat-value {
+      font-size: 20px;
+      font-weight: 600;
+      color: #2c3e50;
+      margin-bottom: 2px;
+    }
+    .stat-label {
+      font-size: 12px;
+      color: #666;
+    }
+    .progress-bar {
+      height: 6px;
+      background: #f1f3f4;
+      border-radius: 3px;
+      overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #4CAF50, #81C784);
+      border-radius: 3px;
+      transition: width 0.5s ease;
+    }
   </style>
 </head>
 <body>
