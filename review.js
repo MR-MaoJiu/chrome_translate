@@ -8,83 +8,166 @@ const MAX_ATTEMPTS = 3;
 // 初始化复习数据
 async function initReview() {
   try {
+    console.log('开始初始化复习数据');
     // 获取生词本数据
     const vocabulary = await getVocabulary();
+    console.log('获取到生词本数据:', vocabulary);
+    
+    if (!vocabulary || !vocabulary.unknown) {
+      throw new Error('生词本数据无效');
+    }
+
     words = Object.entries(vocabulary.unknown);
+    console.log('待复习单词数量:', words.length);
+    
+    if (words.length === 0) {
+      document.querySelector('.container').innerHTML = `
+        <div class="complete-view">
+          <div class="complete-icon"></div>
+          <h2>太棒了！</h2>
+          <p>当前没有需要复习的单词</p>
+          <button class="control-btn primary" onclick="window.close()">关闭</button>
+        </div>
+      `;
+      return;
+    }
     
     // 随机打乱单词顺序
     words.sort(() => Math.random() - 0.5);
     
-    // 更新统计和显示第一个单词
+    // 更新统计
     await updateStats();
+    // 显示第一个单词
     await showCurrentWord();
   } catch (error) {
     console.error('初始化复习失败:', error);
+    document.querySelector('.container').innerHTML = `
+      <div class="error-view">
+        <div class="error-icon">❌</div>
+        <h2>初始化失败</h2>
+        <p>${error.message}</p>
+        <button class="control-btn primary" onclick="window.close()">关闭</button>
+      </div>
+    `;
+  }
+}
+
+// 更新统计数据
+async function updateStats() {
+  try {
+    const settings = await getSettings();
+    const dailyGoal = settings.dailyGoal || 20;
+    const todayReviewed = await getTodayReviewed();
+    const progress = Math.min((todayReviewed.length / dailyGoal) * 100, 100);
+
+    document.getElementById('totalToReview').textContent = words.length;
+    document.getElementById('reviewedToday').textContent = todayReviewed.length;
+    document.getElementById('dailyProgress').textContent = `${Math.round(progress)}%`;
+    document.getElementById('progressFill').style.width = `${progress}%`;
+  } catch (error) {
+    console.error('更新统计失败:', error);
   }
 }
 
 // 显示当前单词
 async function showCurrentWord() {
-  if (currentIndex >= words.length) {
-    showComplete();
-    return;
-  }
+  try {
+    if (currentIndex >= words.length) {
+      showComplete();
+      return;
+    }
 
-  const [word, translation] = words[currentIndex];
-  const settings = await getSettings();
+    const [word, translation] = words[currentIndex];
+    console.log('显示单词:', word, translation);
 
-  switch (currentMode) {
-    case 'flashcard':
-      // 闪卡模式：显示单词，根据设置显示音标，点击显示释义
-      document.getElementById('currentWord').textContent = word;
-      document.getElementById('meaningText').textContent = translation;
-      document.getElementById('meaningText').classList.add('hidden');
-      document.getElementById('phoneticText').textContent = '';
-      
-      // 根据设置显示音标
-      if (settings.showPhonetic) {
-        const response = await translateWord(word);
-        if (response.phonetic) {
-          document.getElementById('phoneticText').textContent = `/${response.phonetic}/`;
-          document.getElementById('phoneticText').style.display = 'block';
+    switch (currentMode) {
+      case 'flashcard':
+        // 闪卡模式：显示单词，获取音标和发音
+        document.getElementById('currentWord').textContent = word;
+        document.getElementById('meaningText').textContent = translation;
+        document.getElementById('meaningText').classList.add('hidden');
+
+        try {
+          // 获取翻译数据（包含音标）
+          const response = await chrome.runtime.sendMessage({
+            action: 'translate',
+            word: word
+          });
+
+          console.log('翻译响应:', response);
+
+          if (response && !response.error) {
+            const settings = await getSettings();
+            // 显示音标
+            if (settings.showPhonetic && response.phonetic) {
+              document.getElementById('phoneticText').textContent = `/${response.phonetic}/`;
+              document.getElementById('phoneticText').style.display = 'block';
+            } else {
+              document.getElementById('phoneticText').style.display = 'none';
+            }
+
+            // 自动朗读
+            if (settings.autoSpeak) {
+              await playWordAudio(word);
+            }
+          }
+        } catch (error) {
+          console.error('获取翻译数据失败:', error);
         }
-      } else {
-        document.getElementById('phoneticText').style.display = 'none';
-      }
+        break;
 
-      // 根据设置自动朗读
-      if (settings.autoSpeak) {
-        setTimeout(() => playWordAudio(word), 500);
-      }
-      break;
+      case 'spelling':
+        // 拼写模式：只显示释义
+        document.getElementById('spellingMeaning').textContent = translation;
+        document.querySelector('#spellingMode input').value = '';
+        document.querySelector('.spelling-hint').textContent = '';
+        break;
 
-    case 'spelling':
-      // 拼写模式：只显示释义，用户输入单词
-      document.getElementById('spellingMeaning').textContent = translation;
-      const spellingInput = document.querySelector('#spellingMode input');
-      spellingInput.value = '';
-      spellingInput.placeholder = '请输入单词...';
-      document.querySelector('.spelling-hint').textContent = '';
-      spellingInput.focus();
-      break;
-
-    case 'listening':
-      // 听写模式：自动播放音频，用户输入听到的单词
-      const listeningInput = document.querySelector('#listeningMode input');
-      listeningInput.value = '';
-      listeningInput.placeholder = '请输入听到的单词...';
-      listeningInput.focus();
-      // 延迟播放音频，确保UI已更新
-      setTimeout(() => playWordAudio(word), 800);
-      break;
+      case 'listening':
+        // 听写模式：清空输入框并播放音频
+        document.querySelector('#listeningMode input').value = '';
+        await playWordAudio(word);
+        break;
+    }
+  } catch (error) {
+    console.error('显示单词失败:', error);
   }
+}
+
+// 显示完成界面
+function showComplete() {
+  const accuracy = Math.round((correctCount / words.length) * 100);
+  
+  const completeHtml = `
+    <div class="complete-view">
+      <div class="complete-icon">🎉</div>
+      <h2>恭喜完成复习！</h2>
+      <div class="complete-stats">
+        <div class="stat-item">
+          <div class="stat-value">${words.length}</div>
+          <div class="stat-label">总复习单词</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value">${correctCount}</div>
+          <div class="stat-label">正确数量</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value">${accuracy}%</div>
+          <div class="stat-label">正确率</div>
+        </div>
+      </div>
+      <button class="control-btn primary" onclick="window.close()">完成</button>
+    </div>
+  `;
+
+  document.querySelector('.container').innerHTML = completeHtml;
 }
 
 // 播放单词音频
 async function playWordAudio(word) {
   try {
     const settings = await getSettings();
-    const type = settings.pronunciationType || '0'; // 根据设置选择美音或英音
+    const type = settings.pronunciationType || '0'; // 0美音，1英音
     const audioUrl = `https://dict.youdao.com/dictvoice?type=${type}&audio=${encodeURIComponent(word)}`;
     
     if (!window.wordAudio) {
@@ -160,64 +243,9 @@ function switchMode(mode) {
 async function nextWord() {
   currentIndex++;
   spellingAttempts = 0;
-  await onWordReviewed(words[currentIndex - 1][0]);
+  await recordReviewedWord(words[currentIndex - 1][0]);
+  await updateStats();
   showCurrentWord();
-}
-
-// 更新统计数据
-async function updateStats() {
-  try {
-    // 获取设置中的每日目标
-    const settings = await getSettings();
-    const dailyGoal = settings.dailyGoal || 20;
-
-    // 获取生词本数据
-    const vocabulary = await getVocabulary();
-    const unknownCount = Object.keys(vocabulary.unknown).length;
-
-    // 获取今日复习记录
-    const todayReviewed = await getTodayReviewed();
-    
-    // 计算进度
-    const progress = Math.min((todayReviewed.length / dailyGoal) * 100, 100);
-
-    // 更新UI
-    document.getElementById('totalToReview').textContent = unknownCount;
-    document.getElementById('reviewedToday').textContent = todayReviewed.length;
-    document.getElementById('dailyProgress').textContent = `${Math.round(progress)}%`;
-    document.getElementById('progressFill').style.width = `${progress}%`;
-  } catch (error) {
-    console.error('更新统计数据失败:', error);
-  }
-}
-
-// 显示完成界面
-function showComplete() {
-  const accuracy = Math.round((correctCount / words.length) * 100);
-  
-  const completeHtml = `
-    <div class="complete-view">
-      <div class="complete-icon">🎉</div>
-      <h2>恭喜完成复习！</h2>
-      <div class="complete-stats">
-        <div class="stat-item">
-          <div class="stat-value">${words.length}</div>
-          <div class="stat-label">总复习单词</div>
-        </div>
-        <div class="stat-item">
-          <div class="stat-value">${correctCount}</div>
-          <div class="stat-label">正确数量</div>
-        </div>
-        <div class="stat-item">
-          <div class="stat-value">${accuracy}%</div>
-          <div class="stat-label">正确率</div>
-        </div>
-      </div>
-      <button class="control-btn primary" onclick="window.close()">完成</button>
-    </div>
-  `;
-
-  document.querySelector('.container').innerHTML = completeHtml;
 }
 
 // 初始化事件监听

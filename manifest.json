@@ -12,10 +12,7 @@
   ],
   "host_permissions": [
     "http://dict.youdao.com/*",
-    "https://dict.youdao.com/*",
-    "https://translate.googleapis.com/*",
-    "https://clients5.google.com/*",
-    "https://translate.google.com/*"
+    "https://dict.youdao.com/*"
   ],
   "action": {
     "default_popup": "popup.html",
@@ -37,5 +34,11 @@
   "background": {
     "service_worker": "background.js"
   },
-  "options_page": "options.html"
+  "options_page": "options.html",
+  "web_accessible_resources": [
+    {
+      "resources": ["review.html", "storage.js"],
+      "matches": ["<all_urls>"]
+    }
+  ]
 } 
