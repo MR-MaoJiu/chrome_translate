@@ -10,7 +10,10 @@
   ],
   "host_permissions": [
     "http://dict.youdao.com/*",
-    "https://dict.youdao.com/*"
+    "https://dict.youdao.com/*",
+    "https://translate.googleapis.com/*",
+    "https://clients5.google.com/*",
+    "https://translate.google.com/*"
   ],
   "action": {
     "default_popup": "popup.html",

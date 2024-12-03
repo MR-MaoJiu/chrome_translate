@@ -111,21 +111,26 @@ async function translateWithYoudao(word) {
 // Google翻译API
 async function translateWithGoogle(word) {
   try {
-    // 使用 Google Cloud Translation API
-    const apiKey = 'YOUR_GOOGLE_API_KEY'; // 需要替换为实际的 API Key
-    const url = `https://translation.googleapis.com/language/translate/v2?key=${apiKey}`;
-    
+    // 构建请求参数
+    const params = new URLSearchParams({
+      client: 'gtx',
+      sl: 'en',
+      tl: 'zh-CN',
+      dt: 't',
+      q: word
+    });
+
+    // 打印请求URL
+    const url = `https://translate.googleapis.com/translate_a/single?${params.toString()}`;
+    console.log('Google翻译请求URL:', url);
+
     const response = await fetch(url, {
-      method: 'POST',
+      method: 'GET',
       headers: {
         'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        q: word,
-        source: 'en',
-        target: 'zh-CN',
-        format: 'text'
-      })
+        'Accept': 'application/json',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+      }
     });
 
     if (!response.ok) {
@@ -133,27 +138,31 @@ async function translateWithGoogle(word) {
     }
 
     const data = await response.json();
-    
-    // 如果没有 API Key 或请求失败，返回提示信息
-    if (!apiKey || !data.data) {
-      return {
-        translation: '请先配置 Google 翻译 API Key',
-        phonetic: '',
-        example: null
-      };
+    // 打印完整返回数据
+    console.log('Google翻译完整返回数据:', JSON.stringify(data, null, 2));
+
+    // 解析翻译结果
+    let translation = '';
+    if (data && Array.isArray(data[0])) {
+      translation = data[0]
+        .filter(item => item && item[0])
+        .map(item => item[0])
+        .join('');
     }
 
-    // 正确返回翻译结果
+    if (!translation) {
+      throw new Error('翻译结果为空');
+    }
+
     return {
-      translation: data.data.translations[0].translatedText,
-      phonetic: '', // Google API 不提供音标
-      example: null // Google API 不提供例句
+      translation: translation,
+      phonetic: '',
+      example: null
     };
   } catch (error) {
     console.error('Google翻译请求失败：', error);
-    // 返回错误提示，而不是抛出错误
     return {
-      translation: 'Google 翻译服务暂时不可用',
+      translation: '谷歌翻译服务暂时不可用，请稍后再试',
       phonetic: '',
       example: null
     };
