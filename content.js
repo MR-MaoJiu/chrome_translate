@@ -177,53 +177,10 @@ const showTranslation = async (selectedText, popup, isHover = false) => {
     closeBtn.className = 'close-btn';
     closeBtn.textContent = '×';
     closeBtn.onclick = removeExistingPopup;
-
-    // 如果不是悬停显示，添加复习进度
-    if (!isHover) {
-      const progress = await getReviewProgress();
-      const progressContent = document.createElement('div');
-      progressContent.innerHTML = `
-        <div class="review-header">
-          <div class="stats-container">
-            <div class="stat-card">
-              <div class="stat-icon">📚</div>
-              <div class="stat-content">
-                <div class="stat-value">${progress.totalToReview}</div>
-                <div class="stat-label">待复习</div>
-              </div>
-            </div>
-            <div class="stat-card">
-              <div class="stat-icon">✅</div>
-              <div class="stat-content">
-                <div class="stat-value">${progress.reviewedToday}</div>
-                <div class="stat-label">今日已复习</div>
-              </div>
-            </div>
-            <div class="stat-card">
-              <div class="stat-icon">🎯</div>
-              <div class="stat-content">
-                <div class="stat-value">${Math.round(progress.progress)}%</div>
-                <div class="stat-label">学习进度</div>
-              </div>
-            </div>
-          </div>
-          <div class="progress-bar">
-            <div class="progress-fill" style="width: ${progress.progress}%"></div>
-          </div>
-        </div>
-      `;
-
-      // 清空并重新添加内容
-      popup.innerHTML = '';
-      popup.appendChild(translationContent);
-      popup.appendChild(progressContent);
-      popup.appendChild(closeBtn);
-    } else {
-      // 悬停显示时只显示翻译内容
-      popup.innerHTML = '';
-      popup.appendChild(translationContent);
-      popup.appendChild(closeBtn);
-    }
+    // 悬停显示时只显示翻译内容
+          popup.innerHTML = '';
+          popup.appendChild(translationContent);
+          popup.appendChild(closeBtn);
 
     // 保存到生词本
     if (!isHover && response.translation !== '翻译失败') {
