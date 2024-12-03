@@ -147,8 +147,10 @@ const showTranslation = async (selectedText, popup, isHover = false) => {
       };
       wordHeader.appendChild(speakBtn);
       
-      if (!isHover) {
-        speakBtn.click();
+      if (settings.autoSpeak === true && !isHover) {
+        setTimeout(() => {
+          playWordAudio(selectedText);
+        }, 300);
       }
     }
 
@@ -399,7 +401,7 @@ chrome.storage.onChanged.addListener((changes, namespace) => {
   }
 });
 
-// 监听���置变更消息
+// 监听置变更消息
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.type === 'settingsUpdated') {
     console.log('收到设置更新:', message.settings);
@@ -431,10 +433,15 @@ async function playWordAudio(word) {
   try {
     const settings = await getSettings();
     const type = settings.pronunciationType || '0';
-    const audioUrl = `http://dict.youdao.com/dictvoice?type=${type}&audio=${encodeURIComponent(word)}`;
+    const audioUrl = `https://dict.youdao.com/dictvoice?type=${type}&audio=${encodeURIComponent(word)}`;
     
-    const audio = new Audio(audioUrl);
-    audio.play().catch(error => {
+    // 使用单例模式管理音频实例
+    if (!window.wordAudio) {
+      window.wordAudio = new Audio();
+    }
+    
+    window.wordAudio.src = audioUrl;
+    window.wordAudio.play().catch(error => {
       console.error('播放发音失败:', error);
     });
   } catch (error) {
