@@ -100,19 +100,16 @@ const showTranslation = async (selectedText, popup, isHover = false) => {
     
     // 获取最新设置和翻译
     const settings = await getSettings();
-    console.log('当前设置:', settings); // 添加日志
-
     const response = await translateWord(selectedText);
-    console.log('翻译响应:', response); // 添加日志
     
     // 检查popup是否仍然存在
     if (!document.contains(popup)) {
       return;
     }
 
-    // 创建翻译内容容器
-    const content = document.createElement('div');
-    content.className = 'translation-content';
+    // 创建翻译内容
+    const translationContent = document.createElement('div');
+    translationContent.className = 'translation-content';
 
     // 创建单词头部
     const wordHeader = document.createElement('div');
@@ -128,85 +125,107 @@ const showTranslation = async (selectedText, popup, isHover = false) => {
     const secondLineDiv = document.createElement('div');
     secondLineDiv.className = 'second-line';
     
-    // 添加音标（根据设置显示/隐藏）
-    if (response.phonetic) {
-      console.log('添加音标:', response.phonetic); // 添加日志
+    // 添加音标
+    if (response.phonetic && settings.showPhonetic) {
       const phoneticDiv = document.createElement('div');
-      phoneticDiv.className = 'phonetic';
+      phoneticDiv.className = 'phonetic show';
       phoneticDiv.textContent = `/${response.phonetic}/`;
-      if (settings.showPhonetic) {
-        phoneticDiv.classList.add('show');
-      }
       secondLineDiv.appendChild(phoneticDiv);
     }
     
-    // 添加朗读按钮（根据设置显示/隐藏）
+    // 添加朗读按钮
     if (settings.autoSpeak) {
       const speakBtn = document.createElement('button');
       speakBtn.className = 'speak-btn show';
       speakBtn.title = '朗读单词';
       speakBtn.textContent = '🔊';
-      speakBtn.onclick = () => {
-        playWordAudio(selectedText);
-      };
+      speakBtn.onclick = () => playWordAudio(selectedText);
       secondLineDiv.appendChild(speakBtn);
       
-      if (settings.autoSpeak === true && !isHover) {
-        setTimeout(() => {
-          playWordAudio(selectedText);
-        }, 300);
+      if (!isHover) {
+        setTimeout(() => playWordAudio(selectedText), 300);
       }
     }
 
-    // 将第二行添加到头部
     wordHeader.appendChild(secondLineDiv);
-
-    content.appendChild(wordHeader);
+    translationContent.appendChild(wordHeader);
     
     // 添加翻译文本
     const meaningDiv = document.createElement('div');
     meaningDiv.className = 'meaning';
     meaningDiv.textContent = response.translation;
-
-    // 添加例句（根据设置显示/隐藏）
-    if (response.example && settings.showExample) {
-      console.log('添加例句:', response.example); // 添加日志
-      const exampleDiv = document.createElement('div');
-      exampleDiv.className = 'example';
-      
-      const enDiv = document.createElement('div');
-      enDiv.className = 'en';
-      enDiv.textContent = response.example.en;
-      
-      const cnDiv = document.createElement('div');
-      cnDiv.className = 'cn';
-      cnDiv.textContent = response.example.cn;
-      
-      exampleDiv.appendChild(enDiv);
-      exampleDiv.appendChild(cnDiv);
-      exampleDiv.classList.add('show');
-      
-      content.appendChild(exampleDiv);
-    }
-
+    
     // 根据设置添加模糊效果
-    if (isHover && settings.autoBlur === true) {
+    if (isHover && settings.autoBlur) {
       meaningDiv.classList.add('blur');
     }
-    content.appendChild(meaningDiv);
-    
+    translationContent.appendChild(meaningDiv);
+
+    // 添加例句
+    if (response.example && settings.showExample) {
+      const exampleDiv = document.createElement('div');
+      exampleDiv.className = 'example show';
+      exampleDiv.innerHTML = `
+        <div class="en">${response.example.en}</div>
+        <div class="cn">${response.example.cn}</div>
+      `;
+      translationContent.appendChild(exampleDiv);
+    }
+
     // 添加关闭按钮
     const closeBtn = document.createElement('div');
     closeBtn.className = 'close-btn';
     closeBtn.textContent = '×';
     closeBtn.onclick = removeExistingPopup;
-    
-    // 清空并重新添加内容
-    popup.innerHTML = '';
-    popup.appendChild(content);
-    popup.appendChild(closeBtn);
 
-    // 如果不是悬停显示且翻译成功，则保存到生词本
+    // 如果不是悬停显示，添加复习进度
+    if (!isHover) {
+      const progress = await getReviewProgress();
+      const progressContent = document.createElement('div');
+      progressContent.innerHTML = `
+        <div class="review-header">
+          <div class="stats-container">
+            <div class="stat-card">
+              <div class="stat-icon">📚</div>
+              <div class="stat-content">
+                <div class="stat-value">${progress.totalToReview}</div>
+                <div class="stat-label">待复习</div>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon">✅</div>
+              <div class="stat-content">
+                <div class="stat-value">${progress.reviewedToday}</div>
+                <div class="stat-label">今日已复习</div>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon">🎯</div>
+              <div class="stat-content">
+                <div class="stat-value">${Math.round(progress.progress)}%</div>
+                <div class="stat-label">学习进度</div>
+              </div>
+            </div>
+          </div>
+          <div class="progress-bar">
+            <div class="progress-fill" style="width: ${progress.progress}%"></div>
+          </div>
+        </div>
+      `;
+
+      // 清空并重新添加内容
+      popup.innerHTML = '';
+      popup.appendChild(translationContent);
+      popup.appendChild(progressContent);
+      popup.appendChild(closeBtn);
+    } else {
+      // 悬停显示时只显示翻译内容
+      popup.innerHTML = '';
+      popup.appendChild(translationContent);
+      popup.appendChild(closeBtn);
+    }
+
+    // 保存到生词本
     if (!isHover && response.translation !== '翻译失败') {
       const saved = await saveToVocabulary(selectedText, response.translation);
       if (saved) {
@@ -453,5 +472,30 @@ async function playWordAudio(word) {
     });
   } catch (error) {
     console.error('获取发音设置失败:', error);
+  }
+}
+
+// 获取复习进度
+async function getReviewProgress() {
+  try {
+    const settings = await getSettings();
+    const dailyGoal = settings.dailyGoal || 20;
+    const vocabulary = await getVocabulary();
+    const unknownCount = Object.keys(vocabulary.unknown).length;
+    const todayReviewed = await getTodayReviewed();
+    const progress = Math.min((todayReviewed.length / dailyGoal) * 100, 100);
+
+    return {
+      totalToReview: unknownCount,
+      reviewedToday: todayReviewed.length,
+      progress: progress
+    };
+  } catch (error) {
+    console.error('获取复习进度失败:', error);
+    return {
+      totalToReview: 0,
+      reviewedToday: 0,
+      progress: 0
+    };
   }
 } 

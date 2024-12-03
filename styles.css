@@ -582,4 +582,38 @@
   margin-bottom: 20px;
   display: block;
 }
+
+/* 确保这些样式在 translate-popup 中也生效 */
+.translate-popup .review-header {
+  margin: -16px -20px 16px;
+  border-radius: 12px 12px 0 0;
+}
+
+.translate-popup .stats-container {
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.translate-popup .stat-card {
+  padding: 12px;
+}
+
+.translate-popup .stat-icon {
+  width: 36px;
+  height: 36px;
+  font-size: 18px;
+}
+
+.translate-popup .stat-value {
+  font-size: 20px;
+}
+
+.translate-popup .stat-label {
+  font-size: 12px;
+}
+
+.translate-popup .progress-bar {
+  height: 6px;
+}
  
