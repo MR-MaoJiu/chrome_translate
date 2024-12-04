@@ -45,4 +45,12 @@
 - Chrome Extension API
 - 有道词典 API
 
-### 项目结构
+### 使用教程参考
+
+![Screenity video - Dec 4, 2024.gif](/doc%2FScreenity%20video%20-%20Dec%204%2C%202024.gif)
+[Screenity video - Dec 4, 2024.mp4](/doc%2FScreenity%20video%20-%20Dec%204%2C%202024.mp4)
+
+### 作者想说
+- 觉得好用请给我一个star或者打赏我一下吧！
+- 如果有什么问题或者建议，欢迎提issue或者发邮件给我！
+![img.png](/doc%2Fimg.png)
